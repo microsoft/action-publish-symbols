@@ -1,14 +1,34 @@
-# Project
+# Publish Symbols Action
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+Use this Action to publish symbols to the Azure DevOps Package Management symbol server (Artifacts server). Symbol servers enables your debugger to automatically retrieve the correct symbol files without knowing product names, build numbers or package names.
 
-As the maintainer of this project, please make a few updates:
+# Usage
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+See [action.yml](action.yml)
+
+Example Usage from a repository containing .NET Core code:
+```yaml
+ steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.102
+    - name: Install dependencies
+      working-directory: './src'
+      run: dotnet restore
+    - name: Build
+      working-directory: './src'
+      run: dotnet build --configuration Debug --no-restore
+    - uses: actions/publish-symbols
+      with:
+        accountName: <Azure DevOps Account Name>
+        symbolServiceUrl: 'https://artifacts.dev.azure.com'
+        personalAccessToken: ${{ secrets.PERSONALACCESSTOKEN }}
+```
+
+The scope of the PAT ( Personal Access Token) generated from Azure DevOps to authenticate the request to Artifacts server should be of the include scopes:
+- Symbols - Read, Write & Manage
 
 ## Contributing
 

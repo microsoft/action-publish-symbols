@@ -1,0 +1,24 @@
+name: 'Publish Symbols'
+description: 'Publish debug symbols to Azure DevOps (Services or Server)'
+author: 'Microsoft'
+inputs:
+  accountName:
+    required: true
+    description: The Azure DevOps account name to publish the symbols to
+  personalAccessToken:
+    required: true
+    description: The Azure DevOps Personal Access Token (PAT) that has permission to publish symbols
+  symbolsFolder: 
+    required: false
+    description: The base directory where the source code exists (defaults to GITHUB_WORKSPACE)
+  searchPattern: 
+    required: false
+    description: The search pattern used to search for symbols
+    default: '**/bin/**/*.pdb'
+  symbolServiceUrl:
+    required: false
+    description: The Url of your symbol server (defaults to https://artifacts.dev.azure.com)
+    default: 'https://artifacts.dev.azure.com'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
