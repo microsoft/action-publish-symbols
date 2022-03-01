@@ -102,3 +102,4 @@ __tests__/TEMP/*
 
 # Ignore jest.setup.json file
 jest.setup.json
+/.vs
