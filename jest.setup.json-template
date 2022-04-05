@@ -1,0 +1,15 @@
+{
+  "envVars": [
+    {"name": "RUNNER_WORKSPACE", "value": ""},
+    {"name": "GITHUB_REPOSITORY", "value": ""},
+    {"name": "GITHUB_WORKFLOW", "value": ""},
+    {"name": "GITHUB_RUN_NUMBER", "value": "},
+    {"name": "GITHUB_RUN_ID", "value": ""}
+  ],
+  "inputs": [
+    {"name": "accountName", "value": ""},
+    {"name": "symbolServiceUrl", "value": ""},
+    {"name": "personalAccessToken", "value": ""},
+    {"name": "searchPattern", "value": ""}
+  ]
+}
