@@ -1,4 +1,4 @@
-import * as hlp from '../src/helpers'
+import * as hlp from '../src/Helpers'
 
 test('test getTempPath', async () => {
   let tempPath = hlp.getTempPath()

@@ -69,3 +69,4 @@ function getSymbolServerUrl(): string {
   const symbolServiceUri = `${core.getInput('symbolServiceUrl')}/${accountName}` as string
   return symbolServiceUri
 }
+
