@@ -1,3 +1,3 @@
-import * as a from '../src/action'
+import * as a from './Action'
 
 a.run()
