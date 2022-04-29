@@ -28,7 +28,10 @@ jobs:
        
       - name: Build GitHub Action
         run: npm run build
-          
+      
+      - name: Tests
+        run: npm run test
+
       # include any workflow/action specific dependencies
       
       - uses: ./                  #picks the current action PR code.
