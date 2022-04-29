@@ -1,6 +1,5 @@
-import * as io from '@actions/io'
 import * as core from '@actions/core'
-import {getEnvVar, getInputWithDefault, getTempFileName, parseBoolean} from '../src/helpers'
+import {getInputWithDefault, getTempFileName, parseBoolean} from '../src/Helpers'
 const fs = require('fs')
 
 describe('Helper Unit Tests', () => {
@@ -87,9 +86,4 @@ describe('Helper Unit Tests', () => {
     expect(out).toBe('defaultValue')
   })
 
-  it('getEnvVar success', () => {
-    var out = getEnvVar('GITHUB_WORKFLOW')
-
-    expect(out).toBe('1')
-  })
 })

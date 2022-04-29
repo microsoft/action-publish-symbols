@@ -1,11 +1,11 @@
-import * as ps from '../src/publishSymbols'
+import * as ps from '../src/PublishSymbols'
 import path from 'path'
 import * as fs from 'fs'
 import * as io from '@actions/io'
 import * as tc from '@actions/tool-cache'
 import {countReset} from 'console'
 import * as core from '@actions/core'
-import * as hlp from '../src/helpers'
+import * as hlp from '../src/Helpers'
 
 test('test getTempPath', async () => {
   const symbolServiceUri = getSymbolServerUrl()
@@ -65,6 +65,8 @@ test('getSymbolServiceUri', async () => {
 })
 
 function getSymbolServerUrl(): string {
+  jest.mock('@actions/core');
+  jest.spyOn(core, 'getInput').mockReturnValueOnce('1es-cat').mockReturnValue('https://artifacts.dev.azure.com');
   const accountName = core.getInput('accountName') as string
   const symbolServiceUri = `${core.getInput('symbolServiceUrl')}/${accountName}` as string
   return symbolServiceUri
