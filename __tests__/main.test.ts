@@ -1,6 +1,5 @@
-import * as a from '../src/action'
-import * as path from 'path'
+import * as a from '../src/Action'
 
 test('getSymbolServiceUri', async () => {
-    await a.run()
+  await a.run()
 })

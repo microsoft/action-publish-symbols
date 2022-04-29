@@ -96,10 +96,8 @@ Thumbs.db
 
 # Ignore built ts files
 __tests__/runner/*
-lib/**/*
 __tests__/CACHE/*
 __tests__/TEMP/*
 
 # Ignore jest.setup.json file
-jest.setup.json
 /.vs
