@@ -28,6 +28,3 @@ jobs:
        
       - name: Build GitHub Action
         run: npm run build
-      
-      - name: Tests
-        run: npm run test
