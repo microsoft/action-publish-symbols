@@ -2,6 +2,8 @@
 
 Use this Action to publish symbols to the Azure DevOps Package Management symbol server (Artifacts server). Symbol servers enables your debugger to automatically retrieve the correct symbol files without knowing product names, build numbers or package names.
 
+[![pr-check](https://github.com/microsoft/action-publish-symbols/actions/workflows/pr-check.yml/badge.svg)](https://github.com/microsoft/action-publish-symbols/actions/workflows/pr-check.yml)
+
 # Usage
 
 See [action.yml](action.yml)
