@@ -51,10 +51,10 @@ test('updateSymbolClient', async () => {
   const symbolServiceUri = getSymbolServerUrl()
   let toolPath = await ps.updateSymbolClient(symbolServiceUri)
   expect(toolPath).toHaveLength
-  const allVersions = ps.findAllVersions('SymbolClient')
-  for (let version in allVersions) {
-    console.debug(`Version: ${version}`)
-  }
+  // const allVersions = ps.findAllVersions('SymbolClient')
+  // for (let version in allVersions) {
+  //   console.debug(`Version: ${version}`)
+  // }
 })
 
 test('getSymbolServiceUri', async () => {
