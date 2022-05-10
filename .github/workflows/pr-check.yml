@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - 'releases/*'
+      
+  workflow_dispatch:
 
 jobs:
     build:
@@ -22,4 +24,7 @@ jobs:
        
       - name: Build GitHub Action
         run: npm run build
-  
+      
+      - name: Run Unit and Functional Tests
+        run: npm run test
+        
