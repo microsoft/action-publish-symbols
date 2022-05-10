@@ -30,11 +30,9 @@ describe('Helper Unit Tests', () => {
     fs.existsSync.mockReturnValue(true)
 
     // Act
-    try {
-      getTempFileName()
-    } catch (err) {
-      expect(err.message).toBe('Unable to create unique temp file name after 6 attempts')
-    }
+    expect(() => {
+      getTempFileName();
+    }).toThrowError('Unable to create unique temp file name after 6 attempts');
 
     // Assert
     expect(core.error).toHaveBeenCalled()

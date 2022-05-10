@@ -96,22 +96,20 @@ describe('Publish Symbol Unit Tests', () => {
     expect(exec.exec).toHaveBeenCalled()
   })
 
-  it('runSymbolCommand throws Error', async () => {
-    // Arrange
-    jest.mock('@actions/exec')
-    const execSpy = jest.spyOn(exec, 'exec')
-    execSpy.mockResolvedValue(200)
+  // it('runSymbolCommand throws Error', async () => {
+  //   // Arrange
+  //   jest.mock('@actions/exec')
+  //   const execSpy = jest.spyOn(exec, 'exec')
+  //   execSpy.mockResolvedValue(200)
 
-    // Act
-    try {
-      await runSymbolCommand('C:\\assemblyPath', 'args')
-    } catch (ex) {
-      expect(ex.message).toBe('C:\\assemblyPath\\symbol.exe exited with code 200')
-    }
+  //   // Act
+  //   expect(async () => {
+  //     await runSymbolCommand('C:\\assemblyPath', 'args');
+  //   }).toThrowError('C:\\assemblyPath\\symbol.exe exited with code 200');
 
-    // Assert
-    expect(exec.exec).toHaveBeenCalled()
-  })
+  //   // Assert
+  //   expect(exec.exec).toHaveBeenCalled()
+  // })
 
   it('unzipSymbolClient successful - File did not exist earlier', async () => {
     // Arrange
@@ -388,23 +386,15 @@ describe('Publish Symbol Unit Tests', () => {
   })
 
   it('find error - toolName Not present', async () => {
-    // Act
-    try {
-      find('', '1.0.0')
-    } catch (err) {
-      // Assert
-      expect(err.message).toBe('toolName parameter is required')
-    }
+    expect(() => {
+      find('', '1.0.0');
+    }).toThrowError('toolName parameter is required');
   })
 
   it('find error - versionSpec Not present', async () => {
-    // Act
-    try {
-      find('tool2', '')
-    } catch (err) {
-      // Assert
-      expect(err.message).toBe('versionSpec parameter is required')
-    }
+    expect(() => {
+      find('tool2', '');
+    }).toThrowError('versionSpec parameter is required');
   })
 
   it('find error - not explicit version', () => {
