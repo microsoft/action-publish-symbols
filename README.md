@@ -22,7 +22,7 @@ Example Usage from a repository containing .NET Core code:
     - name: Build
       working-directory: './src'
       run: dotnet build --configuration Debug --no-restore
-    - uses: actions/publish-symbols
+    - uses: microsoft/action-publish-symbols@main
       with:
         accountName: <Azure DevOps Account Name>
         symbolServiceUrl: 'https://artifacts.dev.azure.com'
