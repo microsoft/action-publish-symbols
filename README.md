@@ -22,15 +22,19 @@ Example Usage from a repository containing .NET Core code:
     - name: Build
       working-directory: './src'
       run: dotnet build --configuration Debug --no-restore
-    - uses: microsoft/action-publish-symbols@main
+    - uses: microsoft/action-publish-symbols@v1
       with:
         accountName: <Azure DevOps Account Name>
         symbolServiceUrl: 'https://artifacts.dev.azure.com'
         personalAccessToken: ${{ secrets.PERSONALACCESSTOKEN }}
 ```
 
+The account name should be the Azure DevOps Organization name.
+
 The scope of the PAT ( Personal Access Token) generated from Azure DevOps to authenticate the request to Artifacts server should be of the include scopes:
 - Symbols - Read, Write & Manage
+
+Sample usage in a .Net Core Project: https://github.com/tanmayghosh2507/GitHubPublicActiontest
 
 ## Contributing
 
