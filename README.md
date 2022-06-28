@@ -11,9 +11,9 @@ See [action.yml](action.yml)
 Example Usage from a repository containing .NET Core code:
 ```yaml
  steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 5.0.102
     - name: Install dependencies
