@@ -400,7 +400,7 @@ describe('Publish Symbol Unit Tests', () => {
   it('find error - versionSpec Not present', async () => {
     expect(() => {
       find('tool2', '');
-    }).toThrowError('versionSpec parameter is a required parameter. Please provide');
+    }).toThrowError('versionSpec parameter is required');
   })
 
   it('find error - not explicit version', () => {
