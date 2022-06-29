@@ -45,8 +45,8 @@ export async function getSymbolClientVersion(accountName: string, symbolServiceU
     if(response.status == 401) {
       throw Error("Verify that PAT has build scope permission")
     }
-    versionNumber = response.data['version'] as string
-    downloadUri = response.data['uri'] as string
+    versionNumber = response.data.version as string
+    downloadUri = response.data.uri as string
   } else {
     var clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/`
 
