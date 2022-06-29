@@ -90,20 +90,20 @@ export async function unzipSymbolClient(clientZip: string, destinationDirectory:
 export async function updateSymbolClient(accountName: string, symbolServiceUri: string, personalAccessToken: string): Promise<string> {
   core.debug('Checking for most recent symbol.app.buildtask.zip version')
 
-  const {availableVersion, downloadUri} = await getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken)
+  const {versionNumber, downloadUri} = await getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken)
   const toolName = 'SymbolClient'
   const zipName = 'symbol.app.buildtask'
 
   // Look up the tool path to see if it's been cached already
   // Note: SymbolClient does not use strict semver, so we have to use our own copy of the find() function
-  let toolPath = find(toolName, availableVersion, 'x64')
+  let toolPath = find(toolName, versionNumber, 'x64')
 
   // If not tool was found in the cache for the latest version, download and cache it
   if (toolPath === '') {
-    core.debug(`Tool: ${toolName}, version: ${availableVersion} not found, downloading...`)
+    core.debug(`Tool: ${toolName}, version: ${versionNumber} not found, downloading...`)
 
     // const baseDownloadPath = path.join(hlp.getTempPath(), toolName, availableVersion)
-    const baseDownloadPath = path.join(".", toolName, availableVersion)
+    const baseDownloadPath = path.join(".", toolName, versionNumber)
 
     // If a previous download exists, clean it up before downloading again
     if (fs.existsSync(baseDownloadPath)) {
@@ -121,11 +121,11 @@ export async function updateSymbolClient(accountName: string, symbolServiceUri: 
     await unzipSymbolClient(symbolClientZip, unzipPath)
 
     // Cache the tool for future use
-    toolPath = await tc.cacheDir(unzipPath, toolName, availableVersion)
+    toolPath = await tc.cacheDir(unzipPath, toolName, versionNumber)
 
-    core.debug(`Cached tool ${toolName}, version: ${availableVersion} at '${toolPath}'`)
+    core.debug(`Cached tool ${toolName}, version: ${versionNumber} at '${toolPath}'`)
   } else {
-    core.debug(`Cached tool ${toolName}, version: ${availableVersion} found at '${toolPath}`)
+    core.debug(`Cached tool ${toolName}, version: ${versionNumber} found at '${toolPath}`)
   }
 
   // add on the lib\net45 path to the actual executable
