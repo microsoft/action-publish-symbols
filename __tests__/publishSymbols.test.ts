@@ -58,11 +58,11 @@ test('updateSymbolClient', async () => {
   // }
 })
 
-test('getSymbolServiceUri', async () => {
-  const {symbolServiceUri, patToken} = getSymbolServerUrl()
-  const artifactUrl = await ps.getSymbolServiceUri(symbolServiceUri, patToken)
-  expect(artifactUrl.length).toBeGreaterThan(0)
-})
+// test('getSymbolServiceUri', async () => {
+//   const {symbolServiceUri, patToken} = getSymbolServerUrl()
+//   const artifactUrl = await ps.getSymbolServiceUri(symbolServiceUri, patToken)
+//   expect(artifactUrl.length).toBeGreaterThan(0)
+// })
 
 function getSymbolServerUrl(): any {
   jest.mock('@actions/core');
