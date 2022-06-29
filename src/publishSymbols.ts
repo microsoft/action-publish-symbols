@@ -48,7 +48,7 @@ export async function getSymbolClientVersion(accountName: string, symbolServiceU
     versionNumber = response.data.version as string
     downloadUri = response.data.uri as string
   } else {
-    var clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/`
+    var clientFetchUrl = `${symbolServiceUri}/${accountName}/_apis/symbol/client/`
 
     const response = await axios.head(clientFetchUrl)
     versionNumber = response.headers['symbol-client-version'] as string
@@ -102,8 +102,7 @@ export async function updateSymbolClient(accountName: string, symbolServiceUri: 
   if (toolPath === '') {
     core.debug(`Tool: ${toolName}, version: ${versionNumber} not found, downloading...`)
 
-    // const baseDownloadPath = path.join(hlp.getTempPath(), toolName, availableVersion)
-    const baseDownloadPath = path.join(".", toolName, versionNumber)
+    const baseDownloadPath = path.join(hlp.getTempPath(), toolName, versionNumber)
 
     // If a previous download exists, clean it up before downloading again
     if (fs.existsSync(baseDownloadPath)) {
@@ -186,44 +185,44 @@ export function unpublishSymbols(Share: string, TransactionId: string): void {
   core.info(`Executing symstore.exe ${symstoreArgs}`)
 }
 
-export async function getSymbolServiceUri(collectionUri: string, personalAccessToken: string): Promise<string> {
-  const serviceDefinitionUri = `${collectionUri}/_apis/servicedefinitions/locationservice2/951917ac-a960-4999-8464-e3f0aa25b381`
+// export async function getSymbolServiceUri(collectionUri: string, personalAccessToken: string): Promise<string> {
+//   const serviceDefinitionUri = `${collectionUri}/_apis/servicedefinitions/locationservice2/951917ac-a960-4999-8464-e3f0aa25b381`
 
-  let artifactsUri = ''
+//   let artifactsUri = ''
 
-  const auth = {auth: {username: '', password: personalAccessToken}}
+//   const auth = {auth: {username: '', password: personalAccessToken}}
 
-  let response = await axios.get(serviceDefinitionUri, auth)
+//   let response = await axios.get(serviceDefinitionUri, auth)
 
-  if (response.status === 200) {
-    const locationUri = response.data.locationMappings[0].location
+//   if (response.status === 200) {
+//     const locationUri = response.data.locationMappings[0].location
 
-    if (!locationUri) {
-      throw Error(`No location mappings found while querying ${serviceDefinitionUri}`)
-    }
+//     if (!locationUri) {
+//       throw Error(`No location mappings found while querying ${serviceDefinitionUri}`)
+//     }
 
-    const locationServiceUri = `${locationUri}/_apis/servicedefinitions/locationservice2/00000016-0000-8888-8000-000000000000`
+//     const locationServiceUri = `${locationUri}/_apis/servicedefinitions/locationservice2/00000016-0000-8888-8000-000000000000`
 
-    response = await axios.get(locationServiceUri, auth)
+//     response = await axios.get(locationServiceUri, auth)
 
-    if (response.status !== 200) {
-      throw Error(
-        `Failure while querying '${locationServiceUri}', returned (${response.status} - ${response.statusText})`
-      )
-    }
+//     if (response.status !== 200) {
+//       throw Error(
+//         `Failure while querying '${locationServiceUri}', returned (${response.status} - ${response.statusText})`
+//       )
+//     }
 
-    artifactsUri = response.data.locationMappings[0].location
+//     artifactsUri = response.data.locationMappings[0].location
 
-    if (!artifactsUri) {
-      core.error(`No location mappings found while querying ${artifactsUri}`)
-    }
-    core.info(`Retrieved artifact service url: '${artifactsUri}'`)
-  } else {
-    core.error(`Symbol server not found at ${collectionUri}`)
-  }
+//     if (!artifactsUri) {
+//       core.error(`No location mappings found while querying ${artifactsUri}`)
+//     }
+//     core.info(`Retrieved artifact service url: '${artifactsUri}'`)
+//   } else {
+//     core.error(`Symbol server not found at ${collectionUri}`)
+//   }
 
-  return artifactsUri
-}
+//   return artifactsUri
+// }
 
 /**
  * Finds the path to a tool version in the local installed tool cache
