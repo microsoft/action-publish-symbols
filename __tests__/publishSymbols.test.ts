@@ -36,7 +36,6 @@ test('unzipSymbol', async () => {
 test('downloadAndCache', async () => {
   const symbolClientVersion = '1.0.0'
   const {symbolServiceUri, patToken} = getSymbolServerUrl()
-  console.log(symbolServiceUri)
   let toolPath = ps.find('SymbolClient', symbolClientVersion)
   const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
   let symbolPath = path.join(symbolPathBase, symbolClientVersion)
@@ -59,18 +58,17 @@ test('updateSymbolClient', async () => {
   // }
 })
 
-// test('getSymbolServiceUri', async () => {
-//   const {symbolServiceUri, patToken} = getSymbolServerUrl()
-//   // const personalAccessToken = patToken
-//   const artifactUrl = await ps.getSymbolServiceUri(symbolServiceUri, patToken)
-//   expect(artifactUrl.length).toBeGreaterThan(0)
-// })
+test('getSymbolServiceUri', async () => {
+  const {symbolServiceUri, patToken} = getSymbolServerUrl()
+  const artifactUrl = await ps.getSymbolServiceUri(symbolServiceUri, patToken)
+  expect(artifactUrl.length).toBeGreaterThan(0)
+})
 
 function getSymbolServerUrl(): any {
   jest.mock('@actions/core');
-  jest.spyOn(core, 'getInput').mockReturnValueOnce('microsoftit').mockReturnValueOnce('https://artifacts.dev.azure.com');
+  jest.spyOn(core, 'getInput').mockReturnValueOnce('1es-cat').mockReturnValueOnce('https://artifacts.dev.azure.com');
   const accountName = core.getInput('accountName') as string
-  const symbolServiceUri = `${core.getInput('symbolServiceUrl')}/${accountName}` as string
+  const symbolServiceUri = `${core.getInput('symbolServiceUrl')}/${accountName}/_apis/symbol/client/task` as string
   const patToken = "patToken"
   return {symbolServiceUri, patToken}
 }

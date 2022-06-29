@@ -2,7 +2,7 @@ import {
   downloadSymbolClient,
   find,
   getSymbolClientVersion,
-  // getSymbolServiceUri,
+  getSymbolServiceUri,
   publishSymbols,
   runSymbolCommand,
   unpublishSymbols,
@@ -217,44 +217,44 @@ describe('Publish Symbol Unit Tests', () => {
     expect(core.info).toHaveBeenCalled()
   })
 
-  // it('getSymbolServiceUri successful', async () => {
-  //   // Arrange
-  //   jest.mock('axios')
-  //   var axiosSpy = jest.spyOn(axios, 'get')
-  //   var response = {
-  //     status: 200,
-  //     data: {
-  //       locationMappings: [
-  //         {
-  //           location: 'https://artifacts.dev.azure.com'
-  //         }
-  //       ]
-  //     }
-  //   }
-  //   axiosSpy.mockResolvedValue(response)
+  it('getSymbolServiceUri successful', async () => {
+    // Arrange
+    jest.mock('axios')
+    var axiosSpy = jest.spyOn(axios, 'get')
+    var response = {
+      status: 200,
+      data: {
+        locationMappings: [
+          {
+            location: 'https://artifacts.dev.azure.com'
+          }
+        ]
+      }
+    }
+    axiosSpy.mockResolvedValue(response)
 
-  //   // Act
-  //   var artifactUri = await getSymbolServiceUri('https://collection.microsoft.com', 'patToken')
+    // Act
+    var artifactUri = await getSymbolServiceUri('https://collection.microsoft.com', 'patToken')
 
-  //   // Assert
-  //   expect(artifactUri).toBe('https://artifacts.dev.azure.com')
-  // })
+    // Assert
+    expect(artifactUri).toBe('https://artifacts.dev.azure.com')
+  })
 
-  // it('getSymbolServiceUri failure', async () => {
-  //   // Arrange
-  //   jest.mock('axios')
-  //   var axiosSpy = jest.spyOn(axios, 'get')
-  //   var response = {
-  //     status: 500
-  //   }
-  //   axiosSpy.mockResolvedValue(response)
+  it('getSymbolServiceUri failure', async () => {
+    // Arrange
+    jest.mock('axios')
+    var axiosSpy = jest.spyOn(axios, 'get')
+    var response = {
+      status: 500
+    }
+    axiosSpy.mockResolvedValue(response)
 
-  //   // Act
-  //   var artifactUri = await getSymbolServiceUri('https://collection.microsoft.com', 'patToken')
+    // Act
+    var artifactUri = await getSymbolServiceUri('https://collection.microsoft.com', 'patToken')
 
-  //   // Assert
-  //   expect(artifactUri).toBe('')
-  // })
+    // Assert
+    expect(artifactUri).toBe('')
+  })
 
   it('publishSymbols successful', async () => {
     // Arrange
