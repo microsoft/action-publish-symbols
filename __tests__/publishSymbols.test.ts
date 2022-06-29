@@ -13,41 +13,41 @@ test('test getTempPath', async () => {
   expect(versionNumber.length).toBeGreaterThan(0)
 })
 
-// test('downloadSymbolClient', async () => {
-//   const {symbolServiceUri, patToken} = getSymbolServerUrl()
-//   console.log(symbolServiceUri)
-//   const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
-//   const symbolClientVersion = '1.0.0'
-//   let symbolPath = path.join(symbolPathBase, symbolClientVersion)
-//   let result = await ps.downloadSymbolClient(symbolServiceUri, symbolPath)
-//   expect(result.length).toBeGreaterThan(0)
-// })
+test('downloadSymbolClient', async () => {
+  const {symbolServiceUri, patToken} = getSymbolServerUrl()
+  console.log(symbolServiceUri)
+  const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
+  const symbolClientVersion = '1.0.0'
+  let symbolPath = path.join(symbolPathBase, symbolClientVersion)
+  let result = await ps.downloadSymbolClient(symbolServiceUri, symbolPath)
+  expect(result.length).toBeGreaterThan(0)
+})
 
-// test('unzipSymbol', async () => {
-//   const {symbolServiceUri, patToken} = getSymbolServerUrl()
-//   const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
-//   const symbolClientVersion = '1.0.0'
-//   let symbolPath = path.join(symbolPathBase, symbolClientVersion)
-//   const pathToZip = await ps.downloadSymbolClient(symbolServiceUri, symbolPath)
-//   const unzipSymbolDestination = path.join(symbolPath, 'symbol.app.buildtask')
-//   await ps.unzipSymbolClient(pathToZip, unzipSymbolDestination)
-// })
+test('unzipSymbol', async () => {
+  const {symbolServiceUri, patToken} = getSymbolServerUrl()
+  const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
+  const symbolClientVersion = '1.0.0'
+  let symbolPath = path.join(symbolPathBase, symbolClientVersion)
+  const pathToZip = await ps.downloadSymbolClient(symbolServiceUri, symbolPath)
+  const unzipSymbolDestination = path.join(symbolPath, 'symbol.app.buildtask')
+  await ps.unzipSymbolClient(pathToZip, unzipSymbolDestination)
+})
 
-// test('downloadAndCache', async () => {
-//   const symbolClientVersion = '1.0.0'
-//   const {symbolServiceUri, patToken} = getSymbolServerUrl()
-//   console.log(symbolServiceUri)
-//   let toolPath = ps.find('SymbolClient', symbolClientVersion)
-//   const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
-//   let symbolPath = path.join(symbolPathBase, symbolClientVersion)
-//   expect(toolPath).toContain('')
-//   const symbolZipPath = await ps.downloadSymbolClient(symbolServiceUri, symbolPath)
-//   const unzipSymbolDestination = path.join(symbolPath, 'symbol.app.buildtask')
-//   await ps.unzipSymbolClient(symbolZipPath, unzipSymbolDestination)
-//   let cacheResult = await tc.cacheDir(unzipSymbolDestination, 'SymbolClient', symbolClientVersion)
-//   toolPath = ps.find('SymbolClient', symbolClientVersion)
-//   expect(toolPath).toHaveLength
-// })
+test('downloadAndCache', async () => {
+  const symbolClientVersion = '1.0.0'
+  const {symbolServiceUri, patToken} = getSymbolServerUrl()
+  console.log(symbolServiceUri)
+  let toolPath = ps.find('SymbolClient', symbolClientVersion)
+  const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
+  let symbolPath = path.join(symbolPathBase, symbolClientVersion)
+  expect(toolPath).toContain('')
+  const symbolZipPath = await ps.downloadSymbolClient(symbolServiceUri, symbolPath)
+  const unzipSymbolDestination = path.join(symbolPath, 'symbol.app.buildtask')
+  await ps.unzipSymbolClient(symbolZipPath, unzipSymbolDestination)
+  let cacheResult = await tc.cacheDir(unzipSymbolDestination, 'SymbolClient', symbolClientVersion)
+  toolPath = ps.find('SymbolClient', symbolClientVersion)
+  expect(toolPath).toHaveLength
+})
 
 test('updateSymbolClient', async () => {
   const {symbolServiceUri, patToken} = getSymbolServerUrl()
