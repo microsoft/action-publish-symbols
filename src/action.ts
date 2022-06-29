@@ -59,7 +59,7 @@ export async function run(): Promise<void> {
 
     stream.end()
 
-    await ps.publishSymbols(symbolServerUrl, requestName, symbolsFolder, tmpFileName, '36530', personalAccessToken)
+    await ps.publishSymbols(accountName, symbolServerUrl, requestName, symbolsFolder, tmpFileName, '36530', personalAccessToken)
 
     if (fs.existsSync(tmpFileName)) {
       io.rmRF(tmpFileName)

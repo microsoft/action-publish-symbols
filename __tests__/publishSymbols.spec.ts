@@ -13,11 +13,14 @@ const fs = require('fs')
 import * as tc from '@actions/tool-cache'
 import * as core from '@actions/core'
 import * as io from '@actions/io'
+import * as os from 'os'
 import axios from 'axios'
 import * as exec from '@actions/exec'
 
 describe('Publish Symbol Unit Tests', () => {
   let symbolServiceUrl = 'https://testUrl.com'
+  let accountName = 'testAdoAccount'
+  let patToken = 'patToken'
   let directory = 'C:\\Users\\Directory\\'
 
   beforeEach(async () => {
@@ -26,6 +29,8 @@ describe('Publish Symbol Unit Tests', () => {
     jest.spyOn(core, 'info')
     jest.spyOn(core, 'error')
     jest.spyOn(core, 'isDebug').mockReturnValue(true)
+    // jest.mock('os')
+    // jest.spyOn(os, 'type').mockReturnValue("Windows_NT")
   })
 
   it('downloadSymbolClient successful When file does not exist previously', async () => {
@@ -77,11 +82,12 @@ describe('Publish Symbol Unit Tests', () => {
     axiosSpy.mockResolvedValue(response)
 
     // Act
-    var versionHeader = await getSymbolClientVersion(symbolServiceUrl)
+    var {versionNumber, downloadUri} = await getSymbolClientVersion(accountName, symbolServiceUrl, patToken)
 
     // Assert
     expect(axios.head).toHaveBeenCalled()
-    expect(versionHeader).toBe('1.0.0')
+    expect(versionNumber).toBe('1.0.0')
+    expect(downloadUri).toBe('https://testUrl.com/_apis/symbol/client/task')
   })
 
   it('runSymbolCommand successful', async () => {
@@ -174,7 +180,7 @@ describe('Publish Symbol Unit Tests', () => {
     jest.spyOn(tc, 'cacheDir')
 
     // Act
-    var toolPath = await updateSymbolClient(symbolServiceUrl)
+    var toolPath = await updateSymbolClient(accountName, symbolServiceUrl, patToken)
 
     // Assert
     expect(toolPath).not.toBe('')
@@ -196,7 +202,7 @@ describe('Publish Symbol Unit Tests', () => {
     fs.existsSync.mockReturnValue(true)
 
     // Act
-    var toolPath = await updateSymbolClient(symbolServiceUrl)
+    var toolPath = await updateSymbolClient(accountName, symbolServiceUrl, patToken)
 
     // Assert
     expect(toolPath).not.toBe('')
@@ -269,7 +275,7 @@ describe('Publish Symbol Unit Tests', () => {
     jest.spyOn(exec, 'exec').mockResolvedValue(0)
 
     // Act
-    await publishSymbols(symbolServiceUrl, 'GET', 'C:\\Users\\test', 'file.json', '365', 'patToken')
+    await publishSymbols(accountName, symbolServiceUrl, 'GET', 'C:\\Users\\test', 'file.json', '365', 'patToken')
 
     // Assert
     expect(core.error).not.toHaveBeenCalled()
@@ -294,7 +300,7 @@ describe('Publish Symbol Unit Tests', () => {
     jest.spyOn(exec, 'exec').mockResolvedValue(0)
 
     // Act
-    await publishSymbols(symbolServiceUrl, 'GET', 'C:\\Users\\test', '', '365', 'patToken')
+    await publishSymbols(accountName, symbolServiceUrl, 'GET', 'C:\\Users\\test', '', '365', 'patToken')
 
     // Assert
     expect(core.error).not.toHaveBeenCalled()
@@ -354,7 +360,7 @@ describe('Publish Symbol Unit Tests', () => {
     jest.spyOn(exec, 'exec').mockResolvedValue(0)
 
     // Act
-    await publishSymbols(symbolServiceUrl, 'GET', 'C:\\Users\\test\\', 'file.json', '365', 'patToken')
+    await publishSymbols(accountName, symbolServiceUrl, 'GET', 'C:\\Users\\test\\', 'file.json', '365', 'patToken')
 
     // Assert
     expect(core.error).not.toHaveBeenCalled()
@@ -379,7 +385,7 @@ describe('Publish Symbol Unit Tests', () => {
     jest.spyOn(exec, 'exec').mockResolvedValue(0)
 
     // Act
-    await publishSymbols(symbolServiceUrl, 'GET', 'C:\\Users\\test', 'file.json', '', 'patToken')
+    await publishSymbols(accountName, symbolServiceUrl, 'GET', 'C:\\Users\\test', 'file.json', '', 'patToken')
 
     // Assert
     expect(core.error).not.toHaveBeenCalled()
