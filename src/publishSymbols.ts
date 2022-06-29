@@ -10,40 +10,57 @@ import * as os from 'os'
 import {ok} from 'assert'
 import * as semver from 'semver'
 
-export async function downloadSymbolClient(symbolServiceUri: string, directory: string): Promise<string> {
-  const clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/task`
-
+export async function downloadSymbolClient(downloadUri: string, directory: string): Promise<string> {
   const symbolAppZip = path.join(directory, 'symbol.app.buildtask.zip')
 
-  core.debug(`Downloading ${clientFetchUrl} to ${symbolAppZip}`)
+  core.debug(`Downloading ${downloadUri} to ${symbolAppZip}`)
 
   if (fs.existsSync(symbolAppZip)) {
     core.debug(`Deleting file found at ${symbolAppZip}`)
     await io.rmRF(symbolAppZip)
   }
 
-  const symbolPath = await tc.downloadTool(clientFetchUrl, symbolAppZip)
+  const symbolPath = await tc.downloadTool(downloadUri, symbolAppZip)
 
   core.debug('Download complete')
 
   return symbolPath
 }
 
-export async function getSymbolClientVersion(symbolServiceUri: string): Promise<string> {
+export async function getSymbolClientVersion(accountName: string, symbolServiceUri: string, personalAccessToken: string): Promise<any> {
   core.debug('Getting latest symbol.app.buildtask.zip package')
+  var versionNumber = '';
+  var downloadUri = '';
+  
+  if(os.type() != "Windows_NT") {
+    var clientFetchUrl = `https://vsblob.dev.azure.com/${accountName}/_apis/clienttools/symbol/release?osName=linux&arch=x86_64`
+    const encodedBase64Token = Buffer.from(`${""}:${personalAccessToken}`).toString('base64'); 
 
-  const clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/`
+    const response = await axios.get(clientFetchUrl, {
+      headers: {
+        'Authorization': `Basic ${encodedBase64Token}`
+      }
+    });
 
-  const response = await axios.head(clientFetchUrl)
-  const versionHeader = response.headers['symbol-client-version'] as string
+    if(response.status == 401) {
+      throw Error("Verify that PAT has build scope permission")
+    }
+    versionNumber = response.data['version'] as string
+    downloadUri = response.data['uri'] as string
+  } else {
+    var clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/`
 
-  core.debug(`Most recent version is ${versionHeader}`)
+    const response = await axios.head(clientFetchUrl)
+    versionNumber = response.headers['symbol-client-version'] as string
+    downloadUri = `${symbolServiceUri}/_apis/symbol/client/task`
+  }
 
-  return versionHeader
+  core.debug(`Most recent version is ${versionNumber}`)
+  return {versionNumber, downloadUri}
 }
 
 export async function runSymbolCommand(assemblyPath: string, args: string): Promise<void> {
-  const exe = path.join(assemblyPath, 'symbol.exe')
+  const exe = (os.type() != "Windows_NT") ? path.join(assemblyPath, 'symbol') : path.join(assemblyPath, 'symbol.exe')
   const traceLevel = core.isDebug() ? 'verbose' : 'info'
   const finalArgs = `${args} --tracelevel ${traceLevel} --globalretrycount 2`
 
@@ -70,10 +87,10 @@ export async function unzipSymbolClient(clientZip: string, destinationDirectory:
   core.debug(`Unzipped - ${result}`)
 }
 
-export async function updateSymbolClient(symbolServiceUri: string): Promise<string> {
+export async function updateSymbolClient(accountName: string, symbolServiceUri: string, personalAccessToken: string): Promise<string> {
   core.debug('Checking for most recent symbol.app.buildtask.zip version')
 
-  const availableVersion = await getSymbolClientVersion(symbolServiceUri)
+  const {availableVersion, downloadUri} = await getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken)
   const toolName = 'SymbolClient'
   const zipName = 'symbol.app.buildtask'
 
@@ -85,7 +102,8 @@ export async function updateSymbolClient(symbolServiceUri: string): Promise<stri
   if (toolPath === '') {
     core.debug(`Tool: ${toolName}, version: ${availableVersion} not found, downloading...`)
 
-    const baseDownloadPath = path.join(hlp.getTempPath(), toolName, availableVersion)
+    // const baseDownloadPath = path.join(hlp.getTempPath(), toolName, availableVersion)
+    const baseDownloadPath = path.join(".", toolName, availableVersion)
 
     // If a previous download exists, clean it up before downloading again
     if (fs.existsSync(baseDownloadPath)) {
@@ -97,7 +115,7 @@ export async function updateSymbolClient(symbolServiceUri: string): Promise<stri
 
     await io.mkdirP(baseDownloadPath)
 
-    const symbolClientZip = await downloadSymbolClient(symbolServiceUri, baseDownloadPath)
+    const symbolClientZip = await downloadSymbolClient(downloadUri, baseDownloadPath)
     const unzipPath = path.join(baseDownloadPath, zipName)
 
     await unzipSymbolClient(symbolClientZip, unzipPath)
@@ -111,12 +129,13 @@ export async function updateSymbolClient(symbolServiceUri: string): Promise<stri
   }
 
   // add on the lib\net45 path to the actual executable
-  toolPath = path.join(toolPath, 'lib', 'net45')
+  toolPath = (os.type() != "Windows_NT") ? toolPath : path.join(toolPath, 'lib', 'net45')
 
   return toolPath
 }
 
 export async function publishSymbols(
+  accountName: string,
   symbolServiceUri: string,
   requestName: string,
   sourcePath: string,
@@ -127,7 +146,7 @@ export async function publishSymbols(
   core.debug(`Using endpoint ${symbolServiceUri} to create request ${requestName} with content in ${sourcePath}`)
 
   // the latest symbol.app.buildtask.zip and use the assemblies in it.
-  const assemblyPath = await updateSymbolClient(symbolServiceUri)
+  const assemblyPath = await updateSymbolClient(accountName, symbolServiceUri, personalAccessToken)
 
   // Publish the files
   try {
