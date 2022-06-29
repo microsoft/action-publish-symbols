@@ -15,7 +15,6 @@ test('test getTempPath', async () => {
 
 test('downloadSymbolClient', async () => {
   const {symbolServiceUri, patToken} = getSymbolServerUrl()
-  console.log(symbolServiceUri)
   const symbolPathBase = path.join(hlp.getEnvVar('RUNNER_TEMP'), 'SymbolClient')
   const symbolClientVersion = '1.0.0'
   let symbolPath = path.join(symbolPathBase, symbolClientVersion)
@@ -48,15 +47,15 @@ test('downloadAndCache', async () => {
   expect(toolPath).toHaveLength
 })
 
-test('updateSymbolClient', async () => {
-  const {symbolServiceUri, patToken} = getSymbolServerUrl()
-  let toolPath = await ps.updateSymbolClient("testAdoAccount", symbolServiceUri, patToken)
-  expect(toolPath).toHaveLength
-  // const allVersions = ps.findAllVersions('SymbolClient')
-  // for (let version in allVersions) {
-  //   console.debug(`Version: ${version}`)
-  // }
-})
+// test('updateSymbolClient', async () => {
+//   const {symbolServiceUri, patToken} = getSymbolServerUrl()
+//   let toolPath = await ps.updateSymbolClient("1es-cat", symbolServiceUri, patToken)
+//   expect(toolPath).toHaveLength
+//   // const allVersions = ps.findAllVersions('SymbolClient')
+//   // for (let version in allVersions) {
+//   //   console.debug(`Version: ${version}`)
+//   // }
+// })
 
 // test('getSymbolServiceUri', async () => {
 //   const {symbolServiceUri, patToken} = getSymbolServerUrl()
