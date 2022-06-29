@@ -10,8 +10,6 @@ import * as os from 'os'
 import {ok} from 'assert'
 import * as semver from 'semver'
 
-var linux_download_uri = "";
-
 export async function downloadSymbolClient(downloadUri: string, directory: string): Promise<string> {
   const symbolAppZip = path.join(directory, 'symbol.app.buildtask.zip')
 
