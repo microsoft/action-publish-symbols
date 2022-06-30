@@ -372,9 +372,11 @@ const io = __importStar(__nccwpck_require__(7436));
 const os = __importStar(__nccwpck_require__(2087));
 const assert_1 = __nccwpck_require__(2357);
 const semver = __importStar(__nccwpck_require__(5911));
+var isWindows = (os.type() == "Windows_NT");
 function downloadSymbolClient(downloadUri, directory) {
     return __awaiter(this, void 0, void 0, function* () {
-        const symbolAppZip = path_1.default.join(directory, 'symbol.app.buildtask.zip');
+        // Windows supports zip files; for Linux and others use tar files
+        const symbolAppZip = isWindows ? path_1.default.join(directory, 'symbol.app.buildtask.zip') : path_1.default.join(directory, 'symbol.app.buildtask.tar.gz');
         core.debug(`Downloading ${downloadUri} to ${symbolAppZip}`);
         if (fs_1.default.existsSync(symbolAppZip)) {
             core.debug(`Deleting file found at ${symbolAppZip}`);
@@ -389,7 +391,7 @@ exports.downloadSymbolClient = downloadSymbolClient;
 function getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken) {
     return __awaiter(this, void 0, void 0, function* () {
         core.debug('Getting latest symbol.app.buildtask.zip package');
-        if (os.type() != "Windows_NT") {
+        if (!isWindows) {
             var clientFetchUrl = `https://vsblob.dev.azure.com/${accountName}/_apis/clienttools/symbol/release?osName=linux&arch=x86_64`;
             const encodedBase64Token = Buffer.from(`${""}:${personalAccessToken}`).toString('base64');
             const response = yield axios_1.default.get(clientFetchUrl, {
@@ -398,7 +400,10 @@ function getSymbolClientVersion(accountName, symbolServiceUri, personalAccessTok
                 }
             });
             if (response.status == 401) {
-                throw Error("Verify that PAT has build scope permission");
+                throw Error("Verify that PAT isn't expired and has build scope permission");
+            }
+            else if (response.status >= 300) {
+                throw Error("Client download URL couldn't be retrieved");
             }
             const versionNumber = response.data.version;
             const downloadUri = response.data.uri;
@@ -418,7 +423,14 @@ function getSymbolClientVersion(accountName, symbolServiceUri, personalAccessTok
 exports.getSymbolClientVersion = getSymbolClientVersion;
 function runSymbolCommand(assemblyPath, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const exe = (os.type() != "Windows_NT") ? path_1.default.join(assemblyPath, 'symbol') : path_1.default.join(assemblyPath, 'symbol.exe');
+        var exe;
+        if (isWindows) {
+            exe = path_1.default.join(assemblyPath, 'symbol.exe');
+        }
+        else {
+            exe = path_1.default.join(assemblyPath, 'symbol');
+            yield exec.exec(`chmod 755 ${exe}`); // Set the symbol command executable by giving appropriate permission
+        }
         const traceLevel = core.isDebug() ? 'verbose' : 'info';
         const finalArgs = `${args} --tracelevel ${traceLevel} --globalretrycount 2`;
         core.info(`Executing: ${exe} ${finalArgs}`);
@@ -438,7 +450,7 @@ function unzipSymbolClient(clientZip, destinationDirectory) {
         }
         core.debug(`Creating ${destinationDirectory}`);
         yield io.mkdirP(destinationDirectory);
-        const result = yield tc.extractZip(clientZip, destinationDirectory);
+        const result = isWindows ? yield tc.extractZip(clientZip, destinationDirectory) : yield tc.extractTar(clientZip, destinationDirectory);
         core.debug(`Unzipped - ${result}`);
     });
 }
@@ -474,7 +486,7 @@ function updateSymbolClient(accountName, symbolServiceUri, personalAccessToken) 
             core.debug(`Cached tool ${toolName}, version: ${versionNumber} found at '${toolPath}`);
         }
         // add on the lib\net45 path to the actual executable
-        toolPath = (os.type() != "Windows_NT") ? toolPath : path_1.default.join(toolPath, 'lib', 'net45');
+        toolPath = isWindows ? path_1.default.join(toolPath, 'lib', 'net45') : toolPath;
         return toolPath;
     });
 }

@@ -10,8 +10,11 @@ import * as os from 'os'
 import {ok} from 'assert'
 import * as semver from 'semver'
 
+var isWindows : boolean = (os.type() == "Windows_NT")
+
 export async function downloadSymbolClient(downloadUri: string, directory: string): Promise<string> {
-  const symbolAppZip = path.join(directory, 'symbol.app.buildtask.zip')
+  // Windows supports zip files; for Linux and others use tar files
+  const symbolAppZip = isWindows ? path.join(directory, 'symbol.app.buildtask.zip') : path.join(directory, 'symbol.app.buildtask.tar.gz')
 
   core.debug(`Downloading ${downloadUri} to ${symbolAppZip}`)
 
@@ -30,7 +33,7 @@ export async function downloadSymbolClient(downloadUri: string, directory: strin
 export async function getSymbolClientVersion(accountName: string, symbolServiceUri: string, personalAccessToken: string): Promise<any> {
   core.debug('Getting latest symbol.app.buildtask.zip package')
   
-  if(os.type() != "Windows_NT") {
+  if(!isWindows) {
     var clientFetchUrl = `https://vsblob.dev.azure.com/${accountName}/_apis/clienttools/symbol/release?osName=linux&arch=x86_64`
     const encodedBase64Token = Buffer.from(`${""}:${personalAccessToken}`).toString('base64'); 
 
@@ -41,8 +44,11 @@ export async function getSymbolClientVersion(accountName: string, symbolServiceU
     });
 
     if(response.status == 401) {
-      throw Error("Verify that PAT has build scope permission")
+      throw Error("Verify that PAT isn't expired and has build scope permission")
+    } else if (response.status >= 300) {
+      throw Error("Client download URL couldn't be retrieved")
     }
+
     const versionNumber = response.data.version as string
     const downloadUri = response.data.uri as string
     core.debug(`Most recent version is ${versionNumber}`)
@@ -59,7 +65,14 @@ export async function getSymbolClientVersion(accountName: string, symbolServiceU
 }
 
 export async function runSymbolCommand(assemblyPath: string, args: string): Promise<void> {
-  const exe = (os.type() != "Windows_NT") ? path.join(assemblyPath, 'symbol') : path.join(assemblyPath, 'symbol.exe')
+  var exe;
+  if(isWindows) {
+    exe = path.join(assemblyPath, 'symbol.exe')
+  } else {
+    exe = path.join(assemblyPath, 'symbol')
+    await exec.exec(`chmod 755 ${exe}`) // Set the symbol command executable by giving appropriate permission
+  }
+
   const traceLevel = core.isDebug() ? 'verbose' : 'info'
   const finalArgs = `${args} --tracelevel ${traceLevel} --globalretrycount 2`
 
@@ -82,7 +95,7 @@ export async function unzipSymbolClient(clientZip: string, destinationDirectory:
   core.debug(`Creating ${destinationDirectory}`)
   await io.mkdirP(destinationDirectory)
 
-  const result = await tc.extractZip(clientZip, destinationDirectory)
+  const result = isWindows ? await tc.extractZip(clientZip, destinationDirectory) : await tc.extractTar(clientZip, destinationDirectory)
   core.debug(`Unzipped - ${result}`)
 }
 
@@ -127,7 +140,7 @@ export async function updateSymbolClient(accountName: string, symbolServiceUri: 
   }
 
   // add on the lib\net45 path to the actual executable
-  toolPath = (os.type() != "Windows_NT") ? toolPath : path.join(toolPath, 'lib', 'net45')
+  toolPath = isWindows ? path.join(toolPath, 'lib', 'net45') : toolPath
 
   return toolPath
 }
