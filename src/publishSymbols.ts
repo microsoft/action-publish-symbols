@@ -13,8 +13,7 @@ import * as semver from 'semver'
 var isWindows : boolean = (os.type() == "Windows_NT")
 
 export async function downloadSymbolClient(downloadUri: string, directory: string): Promise<string> {
-  // Windows supports zip files; for Linux and others use tar files
-  const symbolAppZip = isWindows ? path.join(directory, 'symbol.app.buildtask.zip') : path.join(directory, 'symbol.app.buildtask.tar.gz')
+  const symbolAppZip = path.join(directory, 'symbol.app.buildtask.zip')
 
   core.debug(`Downloading ${downloadUri} to ${symbolAppZip}`)
 
@@ -95,7 +94,17 @@ export async function unzipSymbolClient(clientZip: string, destinationDirectory:
   core.debug(`Creating ${destinationDirectory}`)
   await io.mkdirP(destinationDirectory)
 
-  const result = isWindows ? await tc.extractZip(clientZip, destinationDirectory) : await tc.extractTar(clientZip, destinationDirectory)
+  var result = ""
+  if(isWindows) {
+    result = await tc.extractZip(clientZip, destinationDirectory)
+  } else {
+    try {
+      await exec.exec(`/usr/bin/unzip -o -q ${clientZip} -d ${destinationDirectory}`)
+      result = destinationDirectory
+    } catch(e) {
+      core.warning("Encountered some issues while unzipping.")
+    }
+  }
   core.debug(`Unzipped - ${result}`)
 }
 
@@ -178,9 +187,10 @@ export async function publishSymbols(
 
     if (sourcePathListFileName) {
       if (!fs.existsSync(sourcePathListFileName)) {
-        throw Error(`File ${sourcePathListFileName} not found}`)
+        core.warning(`File ${sourcePathListFileName} not found}`)
+      } else {
+        args += ` --fileListFileName "${sourcePathListFileName}"`
       }
-      args += ` --fileListFileName "${sourcePathListFileName}"`
     }
 
     await runSymbolCommand(assemblyPath, args)

@@ -375,8 +375,7 @@ const semver = __importStar(__nccwpck_require__(5911));
 var isWindows = (os.type() == "Windows_NT");
 function downloadSymbolClient(downloadUri, directory) {
     return __awaiter(this, void 0, void 0, function* () {
-        // Windows supports zip files; for Linux and others use tar files
-        const symbolAppZip = isWindows ? path_1.default.join(directory, 'symbol.app.buildtask.zip') : path_1.default.join(directory, 'symbol.app.buildtask.tar.gz');
+        const symbolAppZip = path_1.default.join(directory, 'symbol.app.buildtask.zip');
         core.debug(`Downloading ${downloadUri} to ${symbolAppZip}`);
         if (fs_1.default.existsSync(symbolAppZip)) {
             core.debug(`Deleting file found at ${symbolAppZip}`);
@@ -450,7 +449,19 @@ function unzipSymbolClient(clientZip, destinationDirectory) {
         }
         core.debug(`Creating ${destinationDirectory}`);
         yield io.mkdirP(destinationDirectory);
-        const result = isWindows ? yield tc.extractZip(clientZip, destinationDirectory) : yield tc.extractTar(clientZip, destinationDirectory);
+        var result = "";
+        if (isWindows) {
+            result = yield tc.extractZip(clientZip, destinationDirectory);
+        }
+        else {
+            try {
+                yield exec.exec(`/usr/bin/unzip -o -q ${clientZip} -d ${destinationDirectory}`);
+                result = destinationDirectory;
+            }
+            catch (e) {
+                core.warning("Encountered some issues while unzipping.");
+            }
+        }
         core.debug(`Unzipped - ${result}`);
     });
 }
@@ -511,9 +522,11 @@ function publishSymbols(accountName, symbolServiceUri, requestName, sourcePath, 
             args += ` --patAuthEnvVar SYMBOL_PAT_AUTH_TOKEN`;
             if (sourcePathListFileName) {
                 if (!fs_1.default.existsSync(sourcePathListFileName)) {
-                    throw Error(`File ${sourcePathListFileName} not found}`);
+                    core.warning(`File ${sourcePathListFileName} not found}`);
                 }
-                args += ` --fileListFileName "${sourcePathListFileName}"`;
+                else {
+                    args += ` --fileListFileName "${sourcePathListFileName}"`;
+                }
             }
             yield runSymbolCommand(assemblyPath, args);
         }
