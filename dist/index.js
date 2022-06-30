@@ -104,6 +104,96 @@ exports.run = run;
 
 /***/ }),
 
+/***/ 3731:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getEnvVar = exports.getInputWithDefault = exports.parseBoolean = exports.makeid = exports.getTempFileName = exports.getTempPath = void 0;
+const path_1 = __importDefault(__nccwpck_require__(5622));
+const core = __importStar(__nccwpck_require__(2186));
+const fs_1 = __importDefault(__nccwpck_require__(5747));
+function getTempPath() {
+    const tempFolder = process.env['RUNNER_TEMP'];
+    return tempFolder;
+}
+exports.getTempPath = getTempPath;
+function getTempFileName() {
+    const suffix = '.txt';
+    let tempFileName = path_1.default.join(getTempPath(), `tmp${makeid(6)}${suffix}`);
+    let fileExists = fs_1.default.existsSync(tempFileName);
+    // We don't want this to run forever.  If the retry loop runs more than 5 times, fail
+    let retryCount = 1;
+    // If for some reason the file already exists, generate a new one.
+    while (fileExists && retryCount < 5) {
+        core.debug(`File ${tempFileName} already exists, recreating a new file`);
+        tempFileName = path_1.default.join(getTempPath(), `tmp${makeid(6)}${suffix}`);
+        fileExists = fs_1.default.existsSync(tempFileName);
+        retryCount++;
+    }
+    // If we get to this point, and the file still exists, throw an exception
+    if (fileExists) {
+        const errorMessage = `Unable to create unique temp file name after ${retryCount + 1} attempts`;
+        core.error(errorMessage);
+        throw Error(errorMessage);
+    }
+    return tempFileName;
+}
+exports.getTempFileName = getTempFileName;
+function makeid(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+exports.makeid = makeid;
+function parseBoolean(input) {
+    return input.toLowerCase() === 'true' || input.toLowerCase() === '1' ? true : false;
+}
+exports.parseBoolean = parseBoolean;
+function getInputWithDefault(inputName, defaultValue) {
+    const inputValue = core.getInput(inputName);
+    return inputValue.trim().length !== 0 ? inputValue : defaultValue;
+}
+exports.getInputWithDefault = getInputWithDefault;
+function getEnvVar(envVar) {
+    return process.env[envVar];
+}
+exports.getEnvVar = getEnvVar;
+
+
+/***/ }),
+
 /***/ 5008:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -276,12 +366,13 @@ const tc = __importStar(__nccwpck_require__(7784));
 const exec = __importStar(__nccwpck_require__(1514));
 const path_1 = __importDefault(__nccwpck_require__(5622));
 const axios_1 = __importDefault(__nccwpck_require__(6545));
+const hlp = __importStar(__nccwpck_require__(3731));
 const fs_1 = __importDefault(__nccwpck_require__(5747));
 const io = __importStar(__nccwpck_require__(7436));
 const os = __importStar(__nccwpck_require__(2087));
 const assert_1 = __nccwpck_require__(2357);
 const semver = __importStar(__nccwpck_require__(5911));
-var linux_download_uri = "";
+var isWindows = (os.type() == "Windows_NT");
 function downloadSymbolClient(downloadUri, directory) {
     return __awaiter(this, void 0, void 0, function* () {
         const symbolAppZip = path_1.default.join(directory, 'symbol.app.buildtask.zip');
@@ -299,9 +390,7 @@ exports.downloadSymbolClient = downloadSymbolClient;
 function getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken) {
     return __awaiter(this, void 0, void 0, function* () {
         core.debug('Getting latest symbol.app.buildtask.zip package');
-        var versionNumber = '';
-        var downloadUri = '';
-        if (os.type() == "Windows_NT") {
+        if (!isWindows) {
             var clientFetchUrl = `https://vsblob.dev.azure.com/${accountName}/_apis/clienttools/symbol/release?osName=linux&arch=x86_64`;
             const encodedBase64Token = Buffer.from(`${""}:${personalAccessToken}`).toString('base64');
             const response = yield axios_1.default.get(clientFetchUrl, {
@@ -310,25 +399,37 @@ function getSymbolClientVersion(accountName, symbolServiceUri, personalAccessTok
                 }
             });
             if (response.status == 401) {
-                throw Error("Verify that PAT has build scope permission");
+                throw Error("Verify that PAT isn't expired and has build scope permission");
             }
-            versionNumber = response.data['version'];
-            downloadUri = response.data['uri'];
+            else if (response.status >= 300) {
+                throw Error("Client download URL couldn't be retrieved");
+            }
+            const versionNumber = response.data.version;
+            const downloadUri = response.data.uri;
+            core.debug(`Most recent version is ${versionNumber}`);
+            return { versionNumber, downloadUri };
         }
         else {
             var clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/`;
             const response = yield axios_1.default.head(clientFetchUrl);
-            versionNumber = response.headers['symbol-client-version'];
-            downloadUri = `${symbolServiceUri}/_apis/symbol/client/task`;
+            const versionNumber = response.headers['symbol-client-version'];
+            const downloadUri = `${symbolServiceUri}/_apis/symbol/client/task`;
+            core.debug(`Most recent version is ${versionNumber}`);
+            return { versionNumber, downloadUri };
         }
-        core.debug(`Most recent version is ${versionNumber}`);
-        return { versionNumber, downloadUri };
     });
 }
 exports.getSymbolClientVersion = getSymbolClientVersion;
 function runSymbolCommand(assemblyPath, args) {
     return __awaiter(this, void 0, void 0, function* () {
-        const exe = (os.type() == "Windows_NT") ? path_1.default.join(assemblyPath, 'symbol') : path_1.default.join(assemblyPath, 'symbol.exe');
+        var exe;
+        if (isWindows) {
+            exe = path_1.default.join(assemblyPath, 'symbol.exe');
+        }
+        else {
+            exe = path_1.default.join(assemblyPath, 'symbol');
+            yield exec.exec(`chmod 755 ${exe}`); // Set the symbol command executable by giving appropriate permission
+        }
         const traceLevel = core.isDebug() ? 'verbose' : 'info';
         const finalArgs = `${args} --tracelevel ${traceLevel} --globalretrycount 2`;
         core.info(`Executing: ${exe} ${finalArgs}`);
@@ -348,7 +449,19 @@ function unzipSymbolClient(clientZip, destinationDirectory) {
         }
         core.debug(`Creating ${destinationDirectory}`);
         yield io.mkdirP(destinationDirectory);
-        const result = yield tc.extractZip(clientZip, destinationDirectory);
+        var result = "";
+        if (isWindows) {
+            result = yield tc.extractZip(clientZip, destinationDirectory);
+        }
+        else {
+            try {
+                yield exec.exec(`/usr/bin/unzip -o -q ${clientZip} -d ${destinationDirectory}`);
+                result = destinationDirectory;
+            }
+            catch (e) {
+                core.warning("Encountered some issues while unzipping.");
+            }
+        }
         core.debug(`Unzipped - ${result}`);
     });
 }
@@ -356,17 +469,16 @@ exports.unzipSymbolClient = unzipSymbolClient;
 function updateSymbolClient(accountName, symbolServiceUri, personalAccessToken) {
     return __awaiter(this, void 0, void 0, function* () {
         core.debug('Checking for most recent symbol.app.buildtask.zip version');
-        const { availableVersion, downloadUri } = yield getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken);
+        const { versionNumber, downloadUri } = yield getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken);
         const toolName = 'SymbolClient';
         const zipName = 'symbol.app.buildtask';
         // Look up the tool path to see if it's been cached already
         // Note: SymbolClient does not use strict semver, so we have to use our own copy of the find() function
-        let toolPath = find(toolName, availableVersion, 'x64');
+        let toolPath = find(toolName, versionNumber, 'x64');
         // If not tool was found in the cache for the latest version, download and cache it
         if (toolPath === '') {
-            core.debug(`Tool: ${toolName}, version: ${availableVersion} not found, downloading...`);
-            // const baseDownloadPath = path.join(hlp.getTempPath(), toolName, availableVersion)
-            const baseDownloadPath = path_1.default.join(".", toolName, availableVersion);
+            core.debug(`Tool: ${toolName}, version: ${versionNumber} not found, downloading...`);
+            const baseDownloadPath = path_1.default.join(hlp.getTempPath(), toolName, versionNumber);
             // If a previous download exists, clean it up before downloading again
             if (fs_1.default.existsSync(baseDownloadPath)) {
                 core.debug(`Cleaning ${baseDownloadPath}`);
@@ -378,14 +490,14 @@ function updateSymbolClient(accountName, symbolServiceUri, personalAccessToken) 
             const unzipPath = path_1.default.join(baseDownloadPath, zipName);
             yield unzipSymbolClient(symbolClientZip, unzipPath);
             // Cache the tool for future use
-            toolPath = yield tc.cacheDir(unzipPath, toolName, availableVersion);
-            core.debug(`Cached tool ${toolName}, version: ${availableVersion} at '${toolPath}'`);
+            toolPath = yield tc.cacheDir(unzipPath, toolName, versionNumber);
+            core.debug(`Cached tool ${toolName}, version: ${versionNumber} at '${toolPath}'`);
         }
         else {
-            core.debug(`Cached tool ${toolName}, version: ${availableVersion} found at '${toolPath}`);
+            core.debug(`Cached tool ${toolName}, version: ${versionNumber} found at '${toolPath}`);
         }
         // add on the lib\net45 path to the actual executable
-        toolPath = (os.type() == "Windows_NT") ? toolPath : path_1.default.join(toolPath, 'lib', 'net45');
+        toolPath = isWindows ? path_1.default.join(toolPath, 'lib', 'net45') : toolPath;
         return toolPath;
     });
 }
@@ -410,9 +522,11 @@ function publishSymbols(accountName, symbolServiceUri, requestName, sourcePath, 
             args += ` --patAuthEnvVar SYMBOL_PAT_AUTH_TOKEN`;
             if (sourcePathListFileName) {
                 if (!fs_1.default.existsSync(sourcePathListFileName)) {
-                    throw Error(`File ${sourcePathListFileName} not found}`);
+                    core.warning(`File ${sourcePathListFileName} not found}`);
                 }
-                args += ` --fileListFileName "${sourcePathListFileName}"`;
+                else {
+                    args += ` --fileListFileName "${sourcePathListFileName}"`;
+                }
             }
             yield runSymbolCommand(assemblyPath, args);
         }
@@ -470,7 +584,7 @@ function find(toolName, versionSpec, arch) {
         throw new Error('toolName parameter is required');
     }
     if (!versionSpec) {
-        throw new Error('versionSpec parameter is required');
+        throw new Error('versionSpec is a required parameter');
     }
     arch = arch || os.arch();
     // attempt to resolve an explicit version
