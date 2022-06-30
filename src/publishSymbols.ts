@@ -236,7 +236,7 @@ export function find(toolName: string, versionSpec: string, arch?: string): stri
   }
 
   if (!versionSpec) {
-    throw new Error('versionSpec parameter is required')
+    throw new Error('versionSpec is a required parameter')
   }
 
   arch = arch || os.arch()
