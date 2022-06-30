@@ -2,6 +2,198 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 3658:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.run = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const fs_1 = __importDefault(__nccwpck_require__(5747));
+const glob = __importStar(__nccwpck_require__(8090));
+const guid_typescript_1 = __nccwpck_require__(52);
+const hlp = __importStar(__nccwpck_require__(5008));
+const ps = __importStar(__nccwpck_require__(6592));
+const path = __importStar(__nccwpck_require__(5622));
+const io = __importStar(__nccwpck_require__(7436));
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // Get workflow inputs
+            const accountName = core.getInput('accountName', { required: true });
+            const symbolServerUrl = `${core.getInput('symbolServiceUrl')}/${accountName}`;
+            const symbolsFolder = hlp.getInputWithDefault('SymbolsFolder', process.env['RUNNER_WORKSPACE']);
+            const searchPattern = hlp.getInputWithDefault('SearchPattern', '**\\bin\\**\\*.pdb');
+            // Get env vars
+            const githubRepository = process.env['GITHUB_REPOSITORY'];
+            const githubWorkflow = process.env['GITHUB_WORKFLOW'];
+            const githubRunNumber = process.env['GITHUB_RUN_NUMBER'];
+            const githubRunId = process.env['GITHUB_RUN_ID'];
+            const requestName = `${githubRepository}/${githubWorkflow}/${githubRunNumber}/${githubRunId}/${guid_typescript_1.Guid.create().toString()}`.toLowerCase();
+            core.info(`Symbol Request Name = ${requestName}`);
+            const personalAccessToken = core.getInput('personalAccessToken', { required: true });
+            // flag the PAT as a secret so it's not written to logs
+            core.setSecret(personalAccessToken);
+            let fileList = [];
+            if (!fs_1.default.existsSync(symbolsFolder)) {
+                throw Error(`The folder '${symbolsFolder}' does not exist, please provide a valid folder`);
+            }
+            // Find all of the matches for the glob pattern(s)
+            const globber = yield glob.create(path.join(symbolsFolder, searchPattern));
+            const matches = yield globber.glob();
+            // Return all the files that aren't directories
+            fileList = matches.filter(res => fs_1.default.statSync(res).isFile());
+            core.info(`Found ${fileList.length} files`);
+            if (fileList.length === 0) {
+                core.error(`No files present in match list, the match had ${fileList.length} matches`);
+            }
+            const tmpFileName = hlp.getTempFileName();
+            const stream = fs_1.default.createWriteStream(tmpFileName, { flags: 'a' });
+            for (const fileName of fileList) {
+                stream.write(`${fileName}\n`);
+            }
+            stream.end();
+            yield ps.publishSymbols(accountName, symbolServerUrl, requestName, symbolsFolder, tmpFileName, '36530', personalAccessToken);
+            if (fs_1.default.existsSync(tmpFileName)) {
+                io.rmRF(tmpFileName);
+            }
+        }
+        catch (error) {
+            core.setFailed(`Action failed with error ${error}`);
+        }
+    });
+}
+exports.run = run;
+
+
+/***/ }),
+
+/***/ 5008:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getEnvVar = exports.getInputWithDefault = exports.parseBoolean = exports.makeid = exports.getTempFileName = exports.getTempPath = void 0;
+const path_1 = __importDefault(__nccwpck_require__(5622));
+const core = __importStar(__nccwpck_require__(2186));
+const fs_1 = __importDefault(__nccwpck_require__(5747));
+function getTempPath() {
+    const tempFolder = process.env['RUNNER_TEMP'];
+    return tempFolder;
+}
+exports.getTempPath = getTempPath;
+function getTempFileName() {
+    const suffix = '.txt';
+    let tempFileName = path_1.default.join(getTempPath(), `tmp${makeid(6)}${suffix}`);
+    let fileExists = fs_1.default.existsSync(tempFileName);
+    // We don't want this to run forever.  If the retry loop runs more than 5 times, fail
+    let retryCount = 1;
+    // If for some reason the file already exists, generate a new one.
+    while (fileExists && retryCount < 5) {
+        core.debug(`File ${tempFileName} already exists, recreating a new file`);
+        tempFileName = path_1.default.join(getTempPath(), `tmp${makeid(6)}${suffix}`);
+        fileExists = fs_1.default.existsSync(tempFileName);
+        retryCount++;
+    }
+    // If we get to this point, and the file still exists, throw an exception
+    if (fileExists) {
+        const errorMessage = `Unable to create unique temp file name after ${retryCount + 1} attempts`;
+        core.error(errorMessage);
+        throw Error(errorMessage);
+    }
+    return tempFileName;
+}
+exports.getTempFileName = getTempFileName;
+function makeid(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
+exports.makeid = makeid;
+function parseBoolean(input) {
+    return input.toLowerCase() === 'true' || input.toLowerCase() === '1' ? true : false;
+}
+exports.parseBoolean = parseBoolean;
+function getInputWithDefault(inputName, defaultValue) {
+    const inputValue = core.getInput(inputName);
+    return inputValue.trim().length !== 0 ? inputValue : defaultValue;
+}
+exports.getInputWithDefault = getInputWithDefault;
+function getEnvVar(envVar) {
+    return process.env[envVar];
+}
+exports.getEnvVar = getEnvVar;
+
+
+/***/ }),
+
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -9,7 +201,11 @@ require('./sourcemap-register.js');module.exports =
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -27,8 +223,348 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const a = __importStar(__nccwpck_require__(7672));
+const a = __importStar(__nccwpck_require__(3658));
 a.run();
+
+
+/***/ }),
+
+/***/ 6592:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.findAllVersions = exports.find = exports.getSymbolServiceUri = exports.unpublishSymbols = exports.publishSymbols = exports.updateSymbolClient = exports.unzipSymbolClient = exports.runSymbolCommand = exports.getSymbolClientVersion = exports.downloadSymbolClient = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const exec = __importStar(__nccwpck_require__(1514));
+const path_1 = __importDefault(__nccwpck_require__(5622));
+const axios_1 = __importDefault(__nccwpck_require__(6545));
+const fs_1 = __importDefault(__nccwpck_require__(5747));
+const io = __importStar(__nccwpck_require__(7436));
+const os = __importStar(__nccwpck_require__(2087));
+const assert_1 = __nccwpck_require__(2357);
+const semver = __importStar(__nccwpck_require__(5911));
+var linux_download_uri = "";
+function downloadSymbolClient(downloadUri, directory) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const symbolAppZip = path_1.default.join(directory, 'symbol.app.buildtask.zip');
+        core.debug(`Downloading ${downloadUri} to ${symbolAppZip}`);
+        if (fs_1.default.existsSync(symbolAppZip)) {
+            core.debug(`Deleting file found at ${symbolAppZip}`);
+            yield io.rmRF(symbolAppZip);
+        }
+        const symbolPath = yield tc.downloadTool(downloadUri, symbolAppZip);
+        core.debug('Download complete');
+        return symbolPath;
+    });
+}
+exports.downloadSymbolClient = downloadSymbolClient;
+function getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug('Getting latest symbol.app.buildtask.zip package');
+        var versionNumber = '';
+        var downloadUri = '';
+        if (os.type() == "Windows_NT") {
+            var clientFetchUrl = `https://vsblob.dev.azure.com/${accountName}/_apis/clienttools/symbol/release?osName=linux&arch=x86_64`;
+            const encodedBase64Token = Buffer.from(`${""}:${personalAccessToken}`).toString('base64');
+            const response = yield axios_1.default.get(clientFetchUrl, {
+                headers: {
+                    'Authorization': `Basic ${encodedBase64Token}`
+                }
+            });
+            if (response.status == 401) {
+                throw Error("Verify that PAT has build scope permission");
+            }
+            versionNumber = response.data['version'];
+            downloadUri = response.data['uri'];
+        }
+        else {
+            var clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/`;
+            const response = yield axios_1.default.head(clientFetchUrl);
+            versionNumber = response.headers['symbol-client-version'];
+            downloadUri = `${symbolServiceUri}/_apis/symbol/client/task`;
+        }
+        core.debug(`Most recent version is ${versionNumber}`);
+        return { versionNumber, downloadUri };
+    });
+}
+exports.getSymbolClientVersion = getSymbolClientVersion;
+function runSymbolCommand(assemblyPath, args) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const exe = (os.type() == "Windows_NT") ? path_1.default.join(assemblyPath, 'symbol') : path_1.default.join(assemblyPath, 'symbol.exe');
+        const traceLevel = core.isDebug() ? 'verbose' : 'info';
+        const finalArgs = `${args} --tracelevel ${traceLevel} --globalretrycount 2`;
+        core.info(`Executing: ${exe} ${finalArgs}`);
+        const result = yield exec.exec(`${exe} ${finalArgs}`);
+        if (result !== 0) {
+            throw Error(`${exe} exited with code ${result}`);
+        }
+    });
+}
+exports.runSymbolCommand = runSymbolCommand;
+function unzipSymbolClient(clientZip, destinationDirectory) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`Unzipping ${clientZip}`);
+        if (fs_1.default.existsSync(destinationDirectory)) {
+            core.debug(`Deleting folder found at ${destinationDirectory}`);
+            yield io.rmRF(destinationDirectory);
+        }
+        core.debug(`Creating ${destinationDirectory}`);
+        yield io.mkdirP(destinationDirectory);
+        const result = yield tc.extractZip(clientZip, destinationDirectory);
+        core.debug(`Unzipped - ${result}`);
+    });
+}
+exports.unzipSymbolClient = unzipSymbolClient;
+function updateSymbolClient(accountName, symbolServiceUri, personalAccessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug('Checking for most recent symbol.app.buildtask.zip version');
+        const { availableVersion, downloadUri } = yield getSymbolClientVersion(accountName, symbolServiceUri, personalAccessToken);
+        const toolName = 'SymbolClient';
+        const zipName = 'symbol.app.buildtask';
+        // Look up the tool path to see if it's been cached already
+        // Note: SymbolClient does not use strict semver, so we have to use our own copy of the find() function
+        let toolPath = find(toolName, availableVersion, 'x64');
+        // If not tool was found in the cache for the latest version, download and cache it
+        if (toolPath === '') {
+            core.debug(`Tool: ${toolName}, version: ${availableVersion} not found, downloading...`);
+            // const baseDownloadPath = path.join(hlp.getTempPath(), toolName, availableVersion)
+            const baseDownloadPath = path_1.default.join(".", toolName, availableVersion);
+            // If a previous download exists, clean it up before downloading again
+            if (fs_1.default.existsSync(baseDownloadPath)) {
+                core.debug(`Cleaning ${baseDownloadPath}`);
+                yield io.rmRF(baseDownloadPath);
+            }
+            core.debug(`Creating ${baseDownloadPath}`);
+            yield io.mkdirP(baseDownloadPath);
+            const symbolClientZip = yield downloadSymbolClient(downloadUri, baseDownloadPath);
+            const unzipPath = path_1.default.join(baseDownloadPath, zipName);
+            yield unzipSymbolClient(symbolClientZip, unzipPath);
+            // Cache the tool for future use
+            toolPath = yield tc.cacheDir(unzipPath, toolName, availableVersion);
+            core.debug(`Cached tool ${toolName}, version: ${availableVersion} at '${toolPath}'`);
+        }
+        else {
+            core.debug(`Cached tool ${toolName}, version: ${availableVersion} found at '${toolPath}`);
+        }
+        // add on the lib\net45 path to the actual executable
+        toolPath = (os.type() == "Windows_NT") ? toolPath : path_1.default.join(toolPath, 'lib', 'net45');
+        return toolPath;
+    });
+}
+exports.updateSymbolClient = updateSymbolClient;
+function publishSymbols(accountName, symbolServiceUri, requestName, sourcePath, sourcePathListFileName, expirationInDays, personalAccessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug(`Using endpoint ${symbolServiceUri} to create request ${requestName} with content in ${sourcePath}`);
+        // the latest symbol.app.buildtask.zip and use the assemblies in it.
+        const assemblyPath = yield updateSymbolClient(accountName, symbolServiceUri, personalAccessToken);
+        // Publish the files
+        try {
+            // if the last char in the source path is \, remove it
+            if (sourcePath.endsWith('\\')) {
+                sourcePath = sourcePath.substr(0, sourcePath.length - 1);
+                core.debug(`Removed trailing '\\' in sourcePath. New value: ${sourcePath}`);
+            }
+            let args = `publish --service "${symbolServiceUri}" --name "${requestName}" --directory "${sourcePath}"`;
+            if (expirationInDays) {
+                args += ` --expirationInDays "${expirationInDays}"`;
+            }
+            core.exportVariable('SYMBOL_PAT_AUTH_TOKEN', personalAccessToken);
+            args += ` --patAuthEnvVar SYMBOL_PAT_AUTH_TOKEN`;
+            if (sourcePathListFileName) {
+                if (!fs_1.default.existsSync(sourcePathListFileName)) {
+                    throw Error(`File ${sourcePathListFileName} not found}`);
+                }
+                args += ` --fileListFileName "${sourcePathListFileName}"`;
+            }
+            yield runSymbolCommand(assemblyPath, args);
+        }
+        catch (err) {
+            core.error(`Error ${err}`);
+            throw err;
+        }
+    });
+}
+exports.publishSymbols = publishSymbols;
+function unpublishSymbols(Share, TransactionId) {
+    const symstoreArgs = `del /i "${TransactionId} /s "${Share}"`;
+    core.debug(symstoreArgs);
+    core.info(`Executing symstore.exe ${symstoreArgs}`);
+}
+exports.unpublishSymbols = unpublishSymbols;
+function getSymbolServiceUri(collectionUri, personalAccessToken) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const serviceDefinitionUri = `${collectionUri}/_apis/servicedefinitions/locationservice2/951917ac-a960-4999-8464-e3f0aa25b381`;
+        let artifactsUri = '';
+        const auth = { auth: { username: '', password: personalAccessToken } };
+        let response = yield axios_1.default.get(serviceDefinitionUri, auth);
+        if (response.status === 200) {
+            const locationUri = response.data.locationMappings[0].location;
+            if (!locationUri) {
+                throw Error(`No location mappings found while querying ${serviceDefinitionUri}`);
+            }
+            const locationServiceUri = `${locationUri}/_apis/servicedefinitions/locationservice2/00000016-0000-8888-8000-000000000000`;
+            response = yield axios_1.default.get(locationServiceUri, auth);
+            if (response.status !== 200) {
+                throw Error(`Failure while querying '${locationServiceUri}', returned (${response.status} - ${response.statusText})`);
+            }
+            artifactsUri = response.data.locationMappings[0].location;
+            if (!artifactsUri) {
+                core.error(`No location mappings found while querying ${artifactsUri}`);
+            }
+            core.info(`Retrieved artifact service url: '${artifactsUri}'`);
+        }
+        else {
+            core.error(`Symbol server not found at ${collectionUri}`);
+        }
+        return artifactsUri;
+    });
+}
+exports.getSymbolServiceUri = getSymbolServiceUri;
+/**
+ * Finds the path to a tool version in the local installed tool cache
+ *
+ * @param toolName      name of the tool
+ * @param versionSpec   version of the tool
+ * @param arch          optional arch.  defaults to arch of computer
+ */
+function find(toolName, versionSpec, arch) {
+    if (!toolName) {
+        throw new Error('toolName parameter is required');
+    }
+    if (!versionSpec) {
+        throw new Error('versionSpec parameter is required');
+    }
+    arch = arch || os.arch();
+    // attempt to resolve an explicit version
+    if (!_isExplicitVersion(versionSpec)) {
+        const localVersions = findAllVersions(toolName, arch);
+        const match = _evaluateVersions(localVersions, versionSpec);
+        versionSpec = match;
+    }
+    // check for the explicit version in the cache
+    let toolPath = '';
+    if (versionSpec) {
+        const cachePath = path_1.default.join(_getCacheDirectory(), toolName, versionSpec, arch);
+        core.debug(`checking cache: ${cachePath}`);
+        if (fs_1.default.existsSync(cachePath) && fs_1.default.existsSync(`${cachePath}.complete`)) {
+            core.debug(`Found tool in cache ${toolName} ${versionSpec} ${arch}`);
+            toolPath = cachePath;
+        }
+        else {
+            core.debug('not found');
+        }
+    }
+    return toolPath;
+}
+exports.find = find;
+/**
+ * Finds the paths to all versions of a tool that are installed in the local tool cache
+ *
+ * @param toolName  name of the tool
+ * @param arch      optional arch.  defaults to arch of computer
+ */
+function findAllVersions(toolName, arch) {
+    const versions = [];
+    arch = arch || os.arch();
+    const toolPath = path_1.default.join(_getCacheDirectory(), toolName);
+    if (fs_1.default.existsSync(toolPath)) {
+        const children = fs_1.default.readdirSync(toolPath);
+        for (const child of children) {
+            if (_isExplicitVersion(child)) {
+                const fullPath = path_1.default.join(toolPath, child, arch || '');
+                if (fs_1.default.existsSync(fullPath) && fs_1.default.existsSync(`${fullPath}.complete`)) {
+                    versions.push(child);
+                }
+            }
+        }
+    }
+    return versions;
+}
+exports.findAllVersions = findAllVersions;
+/**
+ * Finds the paths to all versions of a tool that are installed in the local tool cache
+ *
+ * @param versions      a list of versions to evaluate
+ * @param versionSpec   version of the tool
+ */
+function _evaluateVersions(versions, versionSpec) {
+    let version = '';
+    core.debug(`evaluating ${versions.length} versions`);
+    versions = versions.sort((a, b) => {
+        if (semver.gt(a, b)) {
+            return 1;
+        }
+        return -1;
+    });
+    for (let i = versions.length - 1; i >= 0; i--) {
+        const potential = versions[i];
+        const satisfied = semver.satisfies(potential, versionSpec);
+        if (satisfied) {
+            version = potential;
+            break;
+        }
+    }
+    if (version) {
+        core.debug(`matched: ${version}`);
+    }
+    else {
+        core.debug('match not found');
+    }
+    return version;
+}
+/**
+ * Gets RUNNER_TOOL_CACHE
+ */
+function _getCacheDirectory() {
+    const cacheDirectory = process.env['RUNNER_TOOL_CACHE'] || '';
+    (0, assert_1.ok)(cacheDirectory, 'Expected RUNNER_TOOL_CACHE to be defined');
+    return cacheDirectory;
+}
+function _isExplicitVersion(versionSpec) {
+    const c = semver.clean(versionSpec, { loose: true }) || '';
+    core.debug(`isExplicit: ${c}`);
+    const valid = semver.valid(c) != null;
+    core.debug(`explicit? ${valid}`);
+    return valid;
+}
 
 
 /***/ }),
@@ -447,6 +983,11 @@ function getIDToken(aud) {
     });
 }
 exports.getIDToken = getIDToken;
+/**
+ * Markdown summary exports
+ */
+var markdown_summary_1 = __nccwpck_require__(8042);
+Object.defineProperty(exports, "markdownSummary", ({ enumerable: true, get: function () { return markdown_summary_1.markdownSummary; } }));
 //# sourceMappingURL=core.js.map
 
 /***/ }),
@@ -497,6 +1038,292 @@ function issueCommand(command, message) {
 }
 exports.issueCommand = issueCommand;
 //# sourceMappingURL=file-command.js.map
+
+/***/ }),
+
+/***/ 8042:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
+const os_1 = __nccwpck_require__(2087);
+const fs_1 = __nccwpck_require__(5747);
+const { access, appendFile, writeFile } = fs_1.promises;
+exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
+exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-markdown-summary';
+class MarkdownSummary {
+    constructor() {
+        this._buffer = '';
+    }
+    /**
+     * Finds the summary file path from the environment, rejects if env var is not found or file does not exist
+     * Also checks r/w permissions.
+     *
+     * @returns step summary file path
+     */
+    filePath() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._filePath) {
+                return this._filePath;
+            }
+            const pathFromEnv = process.env[exports.SUMMARY_ENV_VAR];
+            if (!pathFromEnv) {
+                throw new Error(`Unable to find environment variable for $${exports.SUMMARY_ENV_VAR}. Check if your runtime environment supports markdown summaries.`);
+            }
+            try {
+                yield access(pathFromEnv, fs_1.constants.R_OK | fs_1.constants.W_OK);
+            }
+            catch (_a) {
+                throw new Error(`Unable to access summary file: '${pathFromEnv}'. Check if the file has correct read/write permissions.`);
+            }
+            this._filePath = pathFromEnv;
+            return this._filePath;
+        });
+    }
+    /**
+     * Wraps content in an HTML tag, adding any HTML attributes
+     *
+     * @param {string} tag HTML tag to wrap
+     * @param {string | null} content content within the tag
+     * @param {[attribute: string]: string} attrs key-value list of HTML attributes to add
+     *
+     * @returns {string} content wrapped in HTML element
+     */
+    wrap(tag, content, attrs = {}) {
+        const htmlAttrs = Object.entries(attrs)
+            .map(([key, value]) => ` ${key}="${value}"`)
+            .join('');
+        if (!content) {
+            return `<${tag}${htmlAttrs}>`;
+        }
+        return `<${tag}${htmlAttrs}>${content}</${tag}>`;
+    }
+    /**
+     * Writes text in the buffer to the summary buffer file and empties buffer. Will append by default.
+     *
+     * @param {SummaryWriteOptions} [options] (optional) options for write operation
+     *
+     * @returns {Promise<MarkdownSummary>} markdown summary instance
+     */
+    write(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
+            const filePath = yield this.filePath();
+            const writeFunc = overwrite ? writeFile : appendFile;
+            yield writeFunc(filePath, this._buffer, { encoding: 'utf8' });
+            return this.emptyBuffer();
+        });
+    }
+    /**
+     * Clears the summary buffer and wipes the summary file
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    clear() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.emptyBuffer().write({ overwrite: true });
+        });
+    }
+    /**
+     * Returns the current summary buffer as a string
+     *
+     * @returns {string} string of summary buffer
+     */
+    stringify() {
+        return this._buffer;
+    }
+    /**
+     * If the summary buffer is empty
+     *
+     * @returns {boolen} true if the buffer is empty
+     */
+    isEmptyBuffer() {
+        return this._buffer.length === 0;
+    }
+    /**
+     * Resets the summary buffer without writing to summary file
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    emptyBuffer() {
+        this._buffer = '';
+        return this;
+    }
+    /**
+     * Adds raw text to the summary buffer
+     *
+     * @param {string} text content to add
+     * @param {boolean} [addEOL=false] (optional) append an EOL to the raw text (default: false)
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addRaw(text, addEOL = false) {
+        this._buffer += text;
+        return addEOL ? this.addEOL() : this;
+    }
+    /**
+     * Adds the operating system-specific end-of-line marker to the buffer
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addEOL() {
+        return this.addRaw(os_1.EOL);
+    }
+    /**
+     * Adds an HTML codeblock to the summary buffer
+     *
+     * @param {string} code content to render within fenced code block
+     * @param {string} lang (optional) language to syntax highlight code
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addCodeBlock(code, lang) {
+        const attrs = Object.assign({}, (lang && { lang }));
+        const element = this.wrap('pre', this.wrap('code', code), attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML list to the summary buffer
+     *
+     * @param {string[]} items list of items to render
+     * @param {boolean} [ordered=false] (optional) if the rendered list should be ordered or not (default: false)
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addList(items, ordered = false) {
+        const tag = ordered ? 'ol' : 'ul';
+        const listItems = items.map(item => this.wrap('li', item)).join('');
+        const element = this.wrap(tag, listItems);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML table to the summary buffer
+     *
+     * @param {SummaryTableCell[]} rows table rows
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addTable(rows) {
+        const tableBody = rows
+            .map(row => {
+            const cells = row
+                .map(cell => {
+                if (typeof cell === 'string') {
+                    return this.wrap('td', cell);
+                }
+                const { header, data, colspan, rowspan } = cell;
+                const tag = header ? 'th' : 'td';
+                const attrs = Object.assign(Object.assign({}, (colspan && { colspan })), (rowspan && { rowspan }));
+                return this.wrap(tag, data, attrs);
+            })
+                .join('');
+            return this.wrap('tr', cells);
+        })
+            .join('');
+        const element = this.wrap('table', tableBody);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds a collapsable HTML details element to the summary buffer
+     *
+     * @param {string} label text for the closed state
+     * @param {string} content collapsable content
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addDetails(label, content) {
+        const element = this.wrap('details', this.wrap('summary', label) + content);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML image tag to the summary buffer
+     *
+     * @param {string} src path to the image you to embed
+     * @param {string} alt text description of the image
+     * @param {SummaryImageOptions} options (optional) addition image attributes
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addImage(src, alt, options) {
+        const { width, height } = options || {};
+        const attrs = Object.assign(Object.assign({}, (width && { width })), (height && { height }));
+        const element = this.wrap('img', null, Object.assign({ src, alt }, attrs));
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML section heading element
+     *
+     * @param {string} text heading text
+     * @param {number | string} [level=1] (optional) the heading level, default: 1
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addHeading(text, level) {
+        const tag = `h${level}`;
+        const allowedTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)
+            ? tag
+            : 'h1';
+        const element = this.wrap(allowedTag, text);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML thematic break (<hr>) to the summary buffer
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addSeparator() {
+        const element = this.wrap('hr', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML line break (<br>) to the summary buffer
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addBreak() {
+        const element = this.wrap('br', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML blockquote to the summary buffer
+     *
+     * @param {string} text quote text
+     * @param {string} cite (optional) citation url
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addQuote(text, cite) {
+        const attrs = Object.assign({}, (cite && { cite }));
+        const element = this.wrap('blockquote', text, attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML anchor tag to the summary buffer
+     *
+     * @param {string} text link text/content
+     * @param {string} href hyperlink
+     *
+     * @returns {MarkdownSummary} markdown summary instance
+     */
+    addLink(text, href) {
+        const element = this.wrap('a', text, { href });
+        return this.addRaw(element).addEOL();
+    }
+}
+// singleton export
+exports.markdownSummary = new MarkdownSummary();
+//# sourceMappingURL=markdown-summary.js.map
 
 /***/ }),
 
@@ -6875,6 +7702,9 @@ function range(a, b, str) {
   var i = ai;
 
   if (ai >= 0 && bi > 0) {
+    if(a===b) {
+      return [ai, bi];
+    }
     begs = [];
     left = str.length;
 
@@ -7145,12 +7975,21 @@ var isArray = Array.isArray || function (xs) {
  * This is the web browser implementation of `debug()`.
  */
 
-exports.log = log;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
 exports.storage = localstorage();
+exports.destroy = (() => {
+	let warned = false;
+
+	return () => {
+		if (!warned) {
+			warned = true;
+			console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+		}
+	};
+})();
 
 /**
  * Colors.
@@ -7311,18 +8150,14 @@ function formatArgs(args) {
 }
 
 /**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
+ * Invokes `console.debug()` when available.
+ * No-op when `console.debug` is not a "function".
+ * If `console.debug` is not available, falls back
+ * to `console.log`.
  *
  * @api public
  */
-function log(...args) {
-	// This hackery is required for IE8/9, where
-	// the `console.log` function doesn't have 'apply'
-	return typeof console === 'object' &&
-		console.log &&
-		console.log(...args);
-}
+exports.log = console.debug || console.log || (() => {});
 
 /**
  * Save `namespaces`.
@@ -7424,15 +8259,11 @@ function setup(env) {
 	createDebug.enable = enable;
 	createDebug.enabled = enabled;
 	createDebug.humanize = __nccwpck_require__(900);
+	createDebug.destroy = destroy;
 
 	Object.keys(env).forEach(key => {
 		createDebug[key] = env[key];
 	});
-
-	/**
-	* Active `debug` instances.
-	*/
-	createDebug.instances = [];
 
 	/**
 	* The currently active debug mode names, and names to skip.
@@ -7450,7 +8281,7 @@ function setup(env) {
 
 	/**
 	* Selects a color for a debug namespace
-	* @param {String} namespace The namespace string for the for the debug instance to be colored
+	* @param {String} namespace The namespace string for the debug instance to be colored
 	* @return {Number|String} An ANSI color code for the given namespace
 	* @api private
 	*/
@@ -7475,6 +8306,9 @@ function setup(env) {
 	*/
 	function createDebug(namespace) {
 		let prevTime;
+		let enableOverride = null;
+		let namespacesCache;
+		let enabledCache;
 
 		function debug(...args) {
 			// Disabled?
@@ -7504,7 +8338,7 @@ function setup(env) {
 			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
 				// If we encounter an escaped % then don't increase the array index
 				if (match === '%%') {
-					return match;
+					return '%';
 				}
 				index++;
 				const formatter = createDebug.formatters[format];
@@ -7527,31 +8361,36 @@ function setup(env) {
 		}
 
 		debug.namespace = namespace;
-		debug.enabled = createDebug.enabled(namespace);
 		debug.useColors = createDebug.useColors();
-		debug.color = selectColor(namespace);
-		debug.destroy = destroy;
+		debug.color = createDebug.selectColor(namespace);
 		debug.extend = extend;
-		// Debug.formatArgs = formatArgs;
-		// debug.rawLog = rawLog;
+		debug.destroy = createDebug.destroy; // XXX Temporary. Will be removed in the next major release.
 
-		// env-specific initialization logic for debug instances
+		Object.defineProperty(debug, 'enabled', {
+			enumerable: true,
+			configurable: false,
+			get: () => {
+				if (enableOverride !== null) {
+					return enableOverride;
+				}
+				if (namespacesCache !== createDebug.namespaces) {
+					namespacesCache = createDebug.namespaces;
+					enabledCache = createDebug.enabled(namespace);
+				}
+
+				return enabledCache;
+			},
+			set: v => {
+				enableOverride = v;
+			}
+		});
+
+		// Env-specific initialization logic for debug instances
 		if (typeof createDebug.init === 'function') {
 			createDebug.init(debug);
 		}
 
-		createDebug.instances.push(debug);
-
 		return debug;
-	}
-
-	function destroy() {
-		const index = createDebug.instances.indexOf(this);
-		if (index !== -1) {
-			createDebug.instances.splice(index, 1);
-			return true;
-		}
-		return false;
 	}
 
 	function extend(namespace, delimiter) {
@@ -7569,6 +8408,7 @@ function setup(env) {
 	*/
 	function enable(namespaces) {
 		createDebug.save(namespaces);
+		createDebug.namespaces = namespaces;
 
 		createDebug.names = [];
 		createDebug.skips = [];
@@ -7586,15 +8426,10 @@ function setup(env) {
 			namespaces = split[i].replace(/\*/g, '.*?');
 
 			if (namespaces[0] === '-') {
-				createDebug.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
+				createDebug.skips.push(new RegExp('^' + namespaces.slice(1) + '$'));
 			} else {
 				createDebug.names.push(new RegExp('^' + namespaces + '$'));
 			}
-		}
-
-		for (i = 0; i < createDebug.instances.length; i++) {
-			const instance = createDebug.instances[i];
-			instance.enabled = createDebug.enabled(instance.namespace);
 		}
 	}
 
@@ -7670,6 +8505,14 @@ function setup(env) {
 		return val;
 	}
 
+	/**
+	* XXX DO NOT USE. This is a temporary stub function.
+	* XXX It WILL be removed in the next major release.
+	*/
+	function destroy() {
+		console.warn('Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.');
+	}
+
 	createDebug.enable(createDebug.load());
 
 	return createDebug;
@@ -7717,6 +8560,10 @@ exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
 exports.useColors = useColors;
+exports.destroy = util.deprecate(
+	() => {},
+	'Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.'
+);
 
 /**
  * Colors.
@@ -7946,7 +8793,9 @@ const {formatters} = module.exports;
 formatters.o = function (v) {
 	this.inspectOpts.colors = this.useColors;
 	return util.inspect(v, this.inspectOpts)
-		.replace(/\s*\n\s*/g, ' ');
+		.split('\n')
+		.map(str => str.trim())
+		.join(' ');
 };
 
 /**
@@ -8324,97 +9173,101 @@ RedirectableRequest.prototype._processResponse = function (response) {
   // the user agent MAY automatically redirect its request to the URI
   // referenced by the Location field value,
   // even if the specific status code is not understood.
+
+  // If the response is not a redirect; return it as-is
   var location = response.headers.location;
-  if (location && this._options.followRedirects !== false &&
-      statusCode >= 300 && statusCode < 400) {
-    // Abort the current request
-    abortRequest(this._currentRequest);
-    // Discard the remainder of the response to avoid waiting for data
-    response.destroy();
-
-    // RFC7231§6.4: A client SHOULD detect and intervene
-    // in cyclical redirections (i.e., "infinite" redirection loops).
-    if (++this._redirectCount > this._options.maxRedirects) {
-      this.emit("error", new TooManyRedirectsError());
-      return;
-    }
-
-    // RFC7231§6.4: Automatic redirection needs to done with
-    // care for methods not known to be safe, […]
-    // RFC7231§6.4.2–3: For historical reasons, a user agent MAY change
-    // the request method from POST to GET for the subsequent request.
-    if ((statusCode === 301 || statusCode === 302) && this._options.method === "POST" ||
-        // RFC7231§6.4.4: The 303 (See Other) status code indicates that
-        // the server is redirecting the user agent to a different resource […]
-        // A user agent can perform a retrieval request targeting that URI
-        // (a GET or HEAD request if using HTTP) […]
-        (statusCode === 303) && !/^(?:GET|HEAD)$/.test(this._options.method)) {
-      this._options.method = "GET";
-      // Drop a possible entity and headers related to it
-      this._requestBodyBuffers = [];
-      removeMatchingHeaders(/^content-/i, this._options.headers);
-    }
-
-    // Drop the Host header, as the redirect might lead to a different host
-    var currentHostHeader = removeMatchingHeaders(/^host$/i, this._options.headers);
-
-    // If the redirect is relative, carry over the host of the last request
-    var currentUrlParts = url.parse(this._currentUrl);
-    var currentHost = currentHostHeader || currentUrlParts.host;
-    var currentUrl = /^\w+:/.test(location) ? this._currentUrl :
-      url.format(Object.assign(currentUrlParts, { host: currentHost }));
-
-    // Determine the URL of the redirection
-    var redirectUrl;
-    try {
-      redirectUrl = url.resolve(currentUrl, location);
-    }
-    catch (cause) {
-      this.emit("error", new RedirectionError(cause));
-      return;
-    }
-
-    // Create the redirected request
-    debug("redirecting to", redirectUrl);
-    this._isRedirect = true;
-    var redirectUrlParts = url.parse(redirectUrl);
-    Object.assign(this._options, redirectUrlParts);
-
-    // Drop confidential headers when redirecting to another scheme:domain
-    if (redirectUrlParts.protocol !== currentUrlParts.protocol ||
-       !isSameOrSubdomain(redirectUrlParts.host, currentHost)) {
-      removeMatchingHeaders(/^(?:authorization|cookie)$/i, this._options.headers);
-    }
-
-    // Evaluate the beforeRedirect callback
-    if (typeof this._options.beforeRedirect === "function") {
-      var responseDetails = { headers: response.headers };
-      try {
-        this._options.beforeRedirect.call(null, this._options, responseDetails);
-      }
-      catch (err) {
-        this.emit("error", err);
-        return;
-      }
-      this._sanitizeOptions(this._options);
-    }
-
-    // Perform the redirected request
-    try {
-      this._performRequest();
-    }
-    catch (cause) {
-      this.emit("error", new RedirectionError(cause));
-    }
-  }
-  else {
-    // The response is not a redirect; return it as-is
+  if (!location || this._options.followRedirects === false ||
+      statusCode < 300 || statusCode >= 400) {
     response.responseUrl = this._currentUrl;
     response.redirects = this._redirects;
     this.emit("response", response);
 
     // Clean up
     this._requestBodyBuffers = [];
+    return;
+  }
+
+  // The response is a redirect, so abort the current request
+  abortRequest(this._currentRequest);
+  // Discard the remainder of the response to avoid waiting for data
+  response.destroy();
+
+  // RFC7231§6.4: A client SHOULD detect and intervene
+  // in cyclical redirections (i.e., "infinite" redirection loops).
+  if (++this._redirectCount > this._options.maxRedirects) {
+    this.emit("error", new TooManyRedirectsError());
+    return;
+  }
+
+  // RFC7231§6.4: Automatic redirection needs to done with
+  // care for methods not known to be safe, […]
+  // RFC7231§6.4.2–3: For historical reasons, a user agent MAY change
+  // the request method from POST to GET for the subsequent request.
+  if ((statusCode === 301 || statusCode === 302) && this._options.method === "POST" ||
+      // RFC7231§6.4.4: The 303 (See Other) status code indicates that
+      // the server is redirecting the user agent to a different resource […]
+      // A user agent can perform a retrieval request targeting that URI
+      // (a GET or HEAD request if using HTTP) […]
+      (statusCode === 303) && !/^(?:GET|HEAD)$/.test(this._options.method)) {
+    this._options.method = "GET";
+    // Drop a possible entity and headers related to it
+    this._requestBodyBuffers = [];
+    removeMatchingHeaders(/^content-/i, this._options.headers);
+  }
+
+  // Drop the Host header, as the redirect might lead to a different host
+  var currentHostHeader = removeMatchingHeaders(/^host$/i, this._options.headers);
+
+  // If the redirect is relative, carry over the host of the last request
+  var currentUrlParts = url.parse(this._currentUrl);
+  var currentHost = currentHostHeader || currentUrlParts.host;
+  var currentUrl = /^\w+:/.test(location) ? this._currentUrl :
+    url.format(Object.assign(currentUrlParts, { host: currentHost }));
+
+  // Determine the URL of the redirection
+  var redirectUrl;
+  try {
+    redirectUrl = url.resolve(currentUrl, location);
+  }
+  catch (cause) {
+    this.emit("error", new RedirectionError(cause));
+    return;
+  }
+
+  // Create the redirected request
+  debug("redirecting to", redirectUrl);
+  this._isRedirect = true;
+  var redirectUrlParts = url.parse(redirectUrl);
+  Object.assign(this._options, redirectUrlParts);
+
+  // Drop confidential headers when redirecting to a less secure protocol
+  // or to a different domain that is not a superdomain
+  if (redirectUrlParts.protocol !== currentUrlParts.protocol &&
+     redirectUrlParts.protocol !== "https:" ||
+     redirectUrlParts.host !== currentHost &&
+     !isSubdomain(redirectUrlParts.host, currentHost)) {
+    removeMatchingHeaders(/^(?:authorization|cookie)$/i, this._options.headers);
+  }
+
+  // Evaluate the beforeRedirect callback
+  if (typeof this._options.beforeRedirect === "function") {
+    var responseDetails = { headers: response.headers };
+    try {
+      this._options.beforeRedirect.call(null, this._options, responseDetails);
+    }
+    catch (err) {
+      this.emit("error", err);
+      return;
+    }
+    this._sanitizeOptions(this._options);
+  }
+
+  // Perform the redirected request
+  try {
+    this._performRequest();
+  }
+  catch (cause) {
+    this.emit("error", new RedirectionError(cause));
   }
 };
 
@@ -8548,10 +9401,7 @@ function abortRequest(request) {
   request.abort();
 }
 
-function isSameOrSubdomain(subdomain, domain) {
-  if (subdomain === domain) {
-    return true;
-  }
+function isSubdomain(subdomain, domain) {
   const dot = subdomain.length - domain.length - 1;
   return dot > 0 && subdomain[dot] === "." && subdomain.endsWith(domain);
 }
@@ -8633,12 +9483,12 @@ exports.Guid = Guid;
 
 "use strict";
 
-module.exports = (flag, argv) => {
-	argv = argv || process.argv;
+
+module.exports = (flag, argv = process.argv) => {
 	const prefix = flag.startsWith('-') ? '' : (flag.length === 1 ? '-' : '--');
-	const pos = argv.indexOf(prefix + flag);
-	const terminatorPos = argv.indexOf('--');
-	return pos !== -1 && (terminatorPos === -1 ? true : pos < terminatorPos);
+	const position = argv.indexOf(prefix + flag);
+	const terminatorPosition = argv.indexOf('--');
+	return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
 };
 
 
@@ -8650,10 +9500,10 @@ module.exports = (flag, argv) => {
 module.exports = minimatch
 minimatch.Minimatch = Minimatch
 
-var path = { sep: '/' }
-try {
-  path = __nccwpck_require__(5622)
-} catch (er) {}
+var path = (function () { try { return __nccwpck_require__(5622) } catch (e) {}}()) || {
+  sep: '/'
+}
+minimatch.sep = path.sep
 
 var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {}
 var expand = __nccwpck_require__(3717)
@@ -8705,43 +9555,64 @@ function filter (pattern, options) {
 }
 
 function ext (a, b) {
-  a = a || {}
   b = b || {}
   var t = {}
-  Object.keys(b).forEach(function (k) {
-    t[k] = b[k]
-  })
   Object.keys(a).forEach(function (k) {
     t[k] = a[k]
+  })
+  Object.keys(b).forEach(function (k) {
+    t[k] = b[k]
   })
   return t
 }
 
 minimatch.defaults = function (def) {
-  if (!def || !Object.keys(def).length) return minimatch
+  if (!def || typeof def !== 'object' || !Object.keys(def).length) {
+    return minimatch
+  }
 
   var orig = minimatch
 
   var m = function minimatch (p, pattern, options) {
-    return orig.minimatch(p, pattern, ext(def, options))
+    return orig(p, pattern, ext(def, options))
   }
 
   m.Minimatch = function Minimatch (pattern, options) {
     return new orig.Minimatch(pattern, ext(def, options))
+  }
+  m.Minimatch.defaults = function defaults (options) {
+    return orig.defaults(ext(def, options)).Minimatch
+  }
+
+  m.filter = function filter (pattern, options) {
+    return orig.filter(pattern, ext(def, options))
+  }
+
+  m.defaults = function defaults (options) {
+    return orig.defaults(ext(def, options))
+  }
+
+  m.makeRe = function makeRe (pattern, options) {
+    return orig.makeRe(pattern, ext(def, options))
+  }
+
+  m.braceExpand = function braceExpand (pattern, options) {
+    return orig.braceExpand(pattern, ext(def, options))
+  }
+
+  m.match = function (list, pattern, options) {
+    return orig.match(list, pattern, ext(def, options))
   }
 
   return m
 }
 
 Minimatch.defaults = function (def) {
-  if (!def || !Object.keys(def).length) return Minimatch
   return minimatch.defaults(def).Minimatch
 }
 
 function minimatch (p, pattern, options) {
-  if (typeof pattern !== 'string') {
-    throw new TypeError('glob pattern string required')
-  }
+  assertValidPattern(pattern)
 
   if (!options) options = {}
 
@@ -8749,9 +9620,6 @@ function minimatch (p, pattern, options) {
   if (!options.nocomment && pattern.charAt(0) === '#') {
     return false
   }
-
-  // "" only matches ""
-  if (pattern.trim() === '') return p === ''
 
   return new Minimatch(pattern, options).match(p)
 }
@@ -8761,15 +9629,14 @@ function Minimatch (pattern, options) {
     return new Minimatch(pattern, options)
   }
 
-  if (typeof pattern !== 'string') {
-    throw new TypeError('glob pattern string required')
-  }
+  assertValidPattern(pattern)
 
   if (!options) options = {}
+
   pattern = pattern.trim()
 
   // windows support: need to use /, not \
-  if (path.sep !== '/') {
+  if (!options.allowWindowsEscape && path.sep !== '/') {
     pattern = pattern.split(path.sep).join('/')
   }
 
@@ -8780,6 +9647,7 @@ function Minimatch (pattern, options) {
   this.negate = false
   this.comment = false
   this.empty = false
+  this.partial = !!options.partial
 
   // make the set of regexps etc.
   this.make()
@@ -8789,9 +9657,6 @@ Minimatch.prototype.debug = function () {}
 
 Minimatch.prototype.make = make
 function make () {
-  // don't do it more than once.
-  if (this._made) return
-
   var pattern = this.pattern
   var options = this.options
 
@@ -8811,7 +9676,7 @@ function make () {
   // step 2: expand braces
   var set = this.globSet = this.braceExpand()
 
-  if (options.debug) this.debug = console.error
+  if (options.debug) this.debug = function debug() { console.error.apply(console, arguments) }
 
   this.debug(this.pattern, set)
 
@@ -8891,17 +9756,27 @@ function braceExpand (pattern, options) {
   pattern = typeof pattern === 'undefined'
     ? this.pattern : pattern
 
-  if (typeof pattern === 'undefined') {
-    throw new TypeError('undefined pattern')
-  }
+  assertValidPattern(pattern)
 
-  if (options.nobrace ||
-    !pattern.match(/\{.*\}/)) {
+  // Thanks to Yeting Li <https://github.com/yetingli> for
+  // improving this regexp to avoid a ReDOS vulnerability.
+  if (options.nobrace || !/\{(?:(?!\{).)*\}/.test(pattern)) {
     // shortcut. no need to expand.
     return [pattern]
   }
 
   return expand(pattern)
+}
+
+var MAX_PATTERN_LENGTH = 1024 * 64
+var assertValidPattern = function (pattern) {
+  if (typeof pattern !== 'string') {
+    throw new TypeError('invalid pattern')
+  }
+
+  if (pattern.length > MAX_PATTERN_LENGTH) {
+    throw new TypeError('pattern is too long')
+  }
 }
 
 // parse a component of the expanded set.
@@ -8918,14 +9793,17 @@ function braceExpand (pattern, options) {
 Minimatch.prototype.parse = parse
 var SUBPARSE = {}
 function parse (pattern, isSub) {
-  if (pattern.length > 1024 * 64) {
-    throw new TypeError('pattern is too long')
-  }
+  assertValidPattern(pattern)
 
   var options = this.options
 
   // shortcuts
-  if (!options.noglobstar && pattern === '**') return GLOBSTAR
+  if (pattern === '**') {
+    if (!options.noglobstar)
+      return GLOBSTAR
+    else
+      pattern = '*'
+  }
   if (pattern === '') return ''
 
   var re = ''
@@ -8981,10 +9859,12 @@ function parse (pattern, isSub) {
     }
 
     switch (c) {
-      case '/':
+      /* istanbul ignore next */
+      case '/': {
         // completely not allowed, even escaped.
         // Should already be path-split by now.
         return false
+      }
 
       case '\\':
         clearStateChar()
@@ -9103,25 +9983,23 @@ function parse (pattern, isSub) {
 
         // handle the case where we left a class open.
         // "[z-a]" is valid, equivalent to "\[z-a\]"
-        if (inClass) {
-          // split where the last [ was, make sure we don't have
-          // an invalid re. if so, re-walk the contents of the
-          // would-be class to re-translate any characters that
-          // were passed through as-is
-          // TODO: It would probably be faster to determine this
-          // without a try/catch and a new RegExp, but it's tricky
-          // to do safely.  For now, this is safe and works.
-          var cs = pattern.substring(classStart + 1, i)
-          try {
-            RegExp('[' + cs + ']')
-          } catch (er) {
-            // not a valid class!
-            var sp = this.parse(cs, SUBPARSE)
-            re = re.substr(0, reClassStart) + '\\[' + sp[0] + '\\]'
-            hasMagic = hasMagic || sp[1]
-            inClass = false
-            continue
-          }
+        // split where the last [ was, make sure we don't have
+        // an invalid re. if so, re-walk the contents of the
+        // would-be class to re-translate any characters that
+        // were passed through as-is
+        // TODO: It would probably be faster to determine this
+        // without a try/catch and a new RegExp, but it's tricky
+        // to do safely.  For now, this is safe and works.
+        var cs = pattern.substring(classStart + 1, i)
+        try {
+          RegExp('[' + cs + ']')
+        } catch (er) {
+          // not a valid class!
+          var sp = this.parse(cs, SUBPARSE)
+          re = re.substr(0, reClassStart) + '\\[' + sp[0] + '\\]'
+          hasMagic = hasMagic || sp[1]
+          inClass = false
+          continue
         }
 
         // finish up the class.
@@ -9205,9 +10083,7 @@ function parse (pattern, isSub) {
   // something that could conceivably capture a dot
   var addPatternStart = false
   switch (re.charAt(0)) {
-    case '.':
-    case '[':
-    case '(': addPatternStart = true
+    case '[': case '.': case '(': addPatternStart = true
   }
 
   // Hack to work around lack of negative lookbehind in JS
@@ -9269,7 +10145,7 @@ function parse (pattern, isSub) {
   var flags = options.nocase ? 'i' : ''
   try {
     var regExp = new RegExp('^' + re + '$', flags)
-  } catch (er) {
+  } catch (er) /* istanbul ignore next - should be impossible */ {
     // If it was an invalid regular expression, then it can't match
     // anything.  This trick looks for a character after the end of
     // the string, which is of course impossible, except in multi-line
@@ -9327,7 +10203,7 @@ function makeRe () {
 
   try {
     this.regexp = new RegExp(re, flags)
-  } catch (ex) {
+  } catch (ex) /* istanbul ignore next - should be impossible */ {
     this.regexp = false
   }
   return this.regexp
@@ -9345,8 +10221,8 @@ minimatch.match = function (list, pattern, options) {
   return list
 }
 
-Minimatch.prototype.match = match
-function match (f, partial) {
+Minimatch.prototype.match = function match (f, partial) {
+  if (typeof partial === 'undefined') partial = this.partial
   this.debug('match', f, this.pattern)
   // short-circuit in the case of busted things.
   // comments, etc.
@@ -9428,6 +10304,7 @@ Minimatch.prototype.matchOne = function (file, pattern, partial) {
 
     // should be impossible.
     // some invalid regexp stuff in the set.
+    /* istanbul ignore if */
     if (p === false) return false
 
     if (p === GLOBSTAR) {
@@ -9501,6 +10378,7 @@ Minimatch.prototype.matchOne = function (file, pattern, partial) {
       // no match was found.
       // However, in partial mode, we can't say this is necessarily over.
       // If there's more *pattern* left, then
+      /* istanbul ignore if */
       if (partial) {
         // ran out of file
         this.debug('\n>>> no match, partial?', file, fr, pattern, pr)
@@ -9514,11 +10392,7 @@ Minimatch.prototype.matchOne = function (file, pattern, partial) {
     // patterns with magic have been turned into regexps.
     var hit
     if (typeof p === 'string') {
-      if (options.nocase) {
-        hit = f.toLowerCase() === p.toLowerCase()
-      } else {
-        hit = f === p
-      }
+      hit = f === p
       this.debug('string match', p, f, hit)
     } else {
       hit = f.match(p)
@@ -9549,16 +10423,16 @@ Minimatch.prototype.matchOne = function (file, pattern, partial) {
     // this is ok if we're doing the match as part of
     // a glob fs traversal.
     return partial
-  } else if (pi === pl) {
+  } else /* istanbul ignore else */ if (pi === pl) {
     // ran out of pattern, still have file left.
     // this is only acceptable if we're on the very last
     // empty segment of a file with a trailing slash.
     // a/* should match a/b/
-    var emptyFileEnd = (fi === fl - 1) && (file[fi] === '')
-    return emptyFileEnd
+    return (fi === fl - 1) && (file[fi] === '')
   }
 
   // should be unreachable.
+  /* istanbul ignore next */
   throw new Error('wtf?')
 }
 
@@ -11352,23 +12226,32 @@ function coerce (version, options) {
 "use strict";
 
 const os = __nccwpck_require__(2087);
+const tty = __nccwpck_require__(3867);
 const hasFlag = __nccwpck_require__(1621);
 
-const env = process.env;
+const {env} = process;
 
 let forceColor;
 if (hasFlag('no-color') ||
 	hasFlag('no-colors') ||
-	hasFlag('color=false')) {
-	forceColor = false;
+	hasFlag('color=false') ||
+	hasFlag('color=never')) {
+	forceColor = 0;
 } else if (hasFlag('color') ||
 	hasFlag('colors') ||
 	hasFlag('color=true') ||
 	hasFlag('color=always')) {
-	forceColor = true;
+	forceColor = 1;
 }
+
 if ('FORCE_COLOR' in env) {
-	forceColor = env.FORCE_COLOR.length === 0 || parseInt(env.FORCE_COLOR, 10) !== 0;
+	if (env.FORCE_COLOR === 'true') {
+		forceColor = 1;
+	} else if (env.FORCE_COLOR === 'false') {
+		forceColor = 0;
+	} else {
+		forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+	}
 }
 
 function translateLevel(level) {
@@ -11384,8 +12267,8 @@ function translateLevel(level) {
 	};
 }
 
-function supportsColor(stream) {
-	if (forceColor === false) {
+function supportsColor(haveStream, streamIsTTY) {
+	if (forceColor === 0) {
 		return 0;
 	}
 
@@ -11399,22 +12282,21 @@ function supportsColor(stream) {
 		return 2;
 	}
 
-	if (stream && !stream.isTTY && forceColor !== true) {
+	if (haveStream && !streamIsTTY && forceColor === undefined) {
 		return 0;
 	}
 
-	const min = forceColor ? 1 : 0;
+	const min = forceColor || 0;
+
+	if (env.TERM === 'dumb') {
+		return min;
+	}
 
 	if (process.platform === 'win32') {
-		// Node.js 7.5.0 is the first version of Node.js to include a patch to
-		// libuv that enables 256 color output on Windows. Anything earlier and it
-		// won't work. However, here we target Node.js 8 at minimum as it is an LTS
-		// release, and Node.js 7 is not. Windows 10 build 10586 is the first Windows
-		// release that supports 256 colors. Windows 10 build 14931 is the first release
-		// that supports 16m/TrueColor.
+		// Windows 10 build 10586 is the first Windows release that supports 256 colors.
+		// Windows 10 build 14931 is the first release that supports 16m/TrueColor.
 		const osRelease = os.release().split('.');
 		if (
-			Number(process.versions.node.split('.')[0]) >= 8 &&
 			Number(osRelease[0]) >= 10 &&
 			Number(osRelease[2]) >= 10586
 		) {
@@ -11425,7 +12307,7 @@ function supportsColor(stream) {
 	}
 
 	if ('CI' in env) {
-		if (['TRAVIS', 'CIRCLECI', 'APPVEYOR', 'GITLAB_CI'].some(sign => sign in env) || env.CI_NAME === 'codeship') {
+		if (['TRAVIS', 'CIRCLECI', 'APPVEYOR', 'GITLAB_CI', 'GITHUB_ACTIONS', 'BUILDKITE'].some(sign => sign in env) || env.CI_NAME === 'codeship') {
 			return 1;
 		}
 
@@ -11464,22 +12346,18 @@ function supportsColor(stream) {
 		return 1;
 	}
 
-	if (env.TERM === 'dumb') {
-		return min;
-	}
-
 	return min;
 }
 
 function getSupportLevel(stream) {
-	const level = supportsColor(stream);
+	const level = supportsColor(stream, stream && stream.isTTY);
 	return translateLevel(level);
 }
 
 module.exports = {
 	supportsColor: getSupportLevel,
-	stdout: getSupportLevel(process.stdout),
-	stderr: getSupportLevel(process.stderr)
+	stdout: translateLevel(supportsColor(true, tty.isatty(1))),
+	stderr: translateLevel(supportsColor(true, tty.isatty(2)))
 };
 
 
@@ -11781,14 +12659,16 @@ function bytesToUuid(buf, offset) {
   var i = offset || 0;
   var bth = byteToHex;
   // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-  return ([bth[buf[i++]], bth[buf[i++]], 
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]], '-',
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]],
-	bth[buf[i++]], bth[buf[i++]]]).join('');
+  return ([
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]], '-',
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]],
+    bth[buf[i++]], bth[buf[i++]]
+  ]).join('');
 }
 
 module.exports = bytesToUuid;
@@ -11847,512 +12727,11 @@ module.exports = v4;
 
 /***/ }),
 
-/***/ 7672:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const fs_1 = __importDefault(__nccwpck_require__(5747));
-const glob = __importStar(__nccwpck_require__(8090));
-const guid_typescript_1 = __nccwpck_require__(52);
-const hlp = __importStar(__nccwpck_require__(3015));
-const ps = __importStar(__nccwpck_require__(7334));
-const path = __importStar(__nccwpck_require__(5622));
-const io = __importStar(__nccwpck_require__(7436));
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            // Get workflow inputs
-            const accountName = core.getInput('accountName', { required: true });
-            const symbolServerUrl = `${core.getInput('symbolServiceUrl')}/${accountName}`;
-            const symbolsFolder = hlp.getInputWithDefault('SymbolsFolder', process.env['RUNNER_WORKSPACE']);
-            const searchPattern = hlp.getInputWithDefault('SearchPattern', '**\\bin\\**\\*.pdb');
-            // Get env vars
-            const githubRepository = process.env['GITHUB_REPOSITORY'];
-            const githubWorkflow = process.env['GITHUB_WORKFLOW'];
-            const githubRunNumber = process.env['GITHUB_RUN_NUMBER'];
-            const githubRunId = process.env['GITHUB_RUN_ID'];
-            const requestName = `${githubRepository}/${githubWorkflow}/${githubRunNumber}/${githubRunId}/${guid_typescript_1.Guid.create().toString()}`.toLowerCase();
-            core.info(`Symbol Request Name = ${requestName}`);
-            const personalAccessToken = core.getInput('personalAccessToken', { required: true });
-            // flag the PAT as a secret so it's not written to logs
-            core.setSecret(personalAccessToken);
-            let fileList = [];
-            if (!fs_1.default.existsSync(symbolsFolder)) {
-                throw Error(`The folder '${symbolsFolder}' does not exist, please provide a valid folder`);
-            }
-            // Find all of the matches for the glob pattern(s)
-            const globber = yield glob.create(path.join(symbolsFolder, searchPattern));
-            const matches = yield globber.glob();
-            // Return all the files that aren't directories
-            fileList = matches.filter(res => fs_1.default.statSync(res).isFile());
-            core.info(`Found ${fileList.length} files`);
-            if (fileList.length === 0) {
-                core.error(`No files present in match list, the match had ${fileList.length} matches`);
-            }
-            const tmpFileName = hlp.getTempFileName();
-            const stream = fs_1.default.createWriteStream(tmpFileName, { flags: 'a' });
-            for (const fileName of fileList) {
-                stream.write(`${fileName}\n`);
-            }
-            stream.end();
-            yield ps.publishSymbols(symbolServerUrl, requestName, symbolsFolder, tmpFileName, '36530', personalAccessToken);
-            if (fs_1.default.existsSync(tmpFileName)) {
-                io.rmRF(tmpFileName);
-            }
-        }
-        catch (error) {
-            core.setFailed(`Action failed with error ${error}`);
-        }
-    });
-}
-exports.run = run;
-
-
-/***/ }),
-
-/***/ 3015:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getEnvVar = exports.getInputWithDefault = exports.parseBoolean = exports.makeid = exports.getTempFileName = exports.getTempPath = void 0;
-const path_1 = __importDefault(__nccwpck_require__(5622));
-const core = __importStar(__nccwpck_require__(2186));
-const fs_1 = __importDefault(__nccwpck_require__(5747));
-function getTempPath() {
-    const tempFolder = process.env['RUNNER_TEMP'];
-    return tempFolder;
-}
-exports.getTempPath = getTempPath;
-function getTempFileName() {
-    const suffix = '.txt';
-    let tempFileName = path_1.default.join(getTempPath(), `tmp${makeid(6)}${suffix}`);
-    let fileExists = fs_1.default.existsSync(tempFileName);
-    // We don't want this to run forever.  If the retry loop runs more than 5 times, fail
-    let retryCount = 1;
-    // If for some reason the file already exists, generate a new one.
-    while (fileExists && retryCount < 5) {
-        core.debug(`File ${tempFileName} already exists, recreating a new file`);
-        tempFileName = path_1.default.join(getTempPath(), `tmp${makeid(6)}${suffix}`);
-        fileExists = fs_1.default.existsSync(tempFileName);
-        retryCount++;
-    }
-    // If we get to this point, and the file still exists, throw an exception
-    if (fileExists) {
-        const errorMessage = `Unable to create unique temp file name after ${retryCount + 1} attempts`;
-        core.error(errorMessage);
-        throw Error(errorMessage);
-    }
-    return tempFileName;
-}
-exports.getTempFileName = getTempFileName;
-function makeid(length) {
-    let result = '';
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-}
-exports.makeid = makeid;
-function parseBoolean(input) {
-    return input.toLowerCase() === 'true' || input.toLowerCase() === '1' ? true : false;
-}
-exports.parseBoolean = parseBoolean;
-function getInputWithDefault(inputName, defaultValue) {
-    const inputValue = core.getInput(inputName);
-    return inputValue.trim().length !== 0 ? inputValue : defaultValue;
-}
-exports.getInputWithDefault = getInputWithDefault;
-function getEnvVar(envVar) {
-    return process.env[envVar];
-}
-exports.getEnvVar = getEnvVar;
-
-
-/***/ }),
-
-/***/ 7334:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.findAllVersions = exports.find = exports.getSymbolServiceUri = exports.unpublishSymbols = exports.publishSymbols = exports.updateSymbolClient = exports.unzipSymbolClient = exports.runSymbolCommand = exports.getSymbolClientVersion = exports.downloadSymbolClient = void 0;
-const core = __importStar(__nccwpck_require__(2186));
-const tc = __importStar(__nccwpck_require__(7784));
-const exec = __importStar(__nccwpck_require__(1514));
-const path_1 = __importDefault(__nccwpck_require__(5622));
-const axios_1 = __importDefault(__nccwpck_require__(6545));
-const hlp = __importStar(__nccwpck_require__(3015));
-const fs_1 = __importDefault(__nccwpck_require__(5747));
-const io = __importStar(__nccwpck_require__(7436));
-const os = __importStar(__nccwpck_require__(2087));
-const assert_1 = __nccwpck_require__(2357);
-const semver = __importStar(__nccwpck_require__(5911));
-function downloadSymbolClient(symbolServiceUri, directory) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/task`;
-        const symbolAppZip = path_1.default.join(directory, 'symbol.app.buildtask.zip');
-        core.debug(`Downloading ${clientFetchUrl} to ${symbolAppZip}`);
-        if (fs_1.default.existsSync(symbolAppZip)) {
-            core.debug(`Deleting file found at ${symbolAppZip}`);
-            yield io.rmRF(symbolAppZip);
-        }
-        const symbolPath = yield tc.downloadTool(clientFetchUrl, symbolAppZip);
-        core.debug('Download complete');
-        return symbolPath;
-    });
-}
-exports.downloadSymbolClient = downloadSymbolClient;
-function getSymbolClientVersion(symbolServiceUri) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.debug('Getting latest symbol.app.buildtask.zip package');
-        const clientFetchUrl = `${symbolServiceUri}/_apis/symbol/client/`;
-        const response = yield axios_1.default.head(clientFetchUrl);
-        const versionHeader = response.headers['symbol-client-version'];
-        core.debug(`Most recent version is ${versionHeader}`);
-        return versionHeader;
-    });
-}
-exports.getSymbolClientVersion = getSymbolClientVersion;
-function runSymbolCommand(assemblyPath, args) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const exe = path_1.default.join(assemblyPath, 'symbol.exe');
-        const traceLevel = core.isDebug() ? 'verbose' : 'info';
-        const finalArgs = `${args} --tracelevel ${traceLevel} --globalretrycount 2`;
-        core.info(`Executing: ${exe} ${finalArgs}`);
-        const result = yield exec.exec(`${exe} ${finalArgs}`);
-        if (result !== 0) {
-            throw Error(`${exe} exited with code ${result}`);
-        }
-    });
-}
-exports.runSymbolCommand = runSymbolCommand;
-function unzipSymbolClient(clientZip, destinationDirectory) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`Unzipping ${clientZip}`);
-        if (fs_1.default.existsSync(destinationDirectory)) {
-            core.debug(`Deleting folder found at ${destinationDirectory}`);
-            yield io.rmRF(destinationDirectory);
-        }
-        core.debug(`Creating ${destinationDirectory}`);
-        yield io.mkdirP(destinationDirectory);
-        const result = yield tc.extractZip(clientZip, destinationDirectory);
-        core.debug(`Unzipped - ${result}`);
-    });
-}
-exports.unzipSymbolClient = unzipSymbolClient;
-function updateSymbolClient(symbolServiceUri) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.debug('Checking for most recent symbol.app.buildtask.zip version');
-        const availableVersion = yield getSymbolClientVersion(symbolServiceUri);
-        const toolName = 'SymbolClient';
-        const zipName = 'symbol.app.buildtask';
-        // Look up the tool path to see if it's been cached already
-        // Note: SymbolClient does not use strict semver, so we have to use our own copy of the find() function
-        let toolPath = find(toolName, availableVersion, 'x64');
-        // If not tool was found in the cache for the latest version, download and cache it
-        if (toolPath === '') {
-            core.debug(`Tool: ${toolName}, version: ${availableVersion} not found, downloading...`);
-            const baseDownloadPath = path_1.default.join(hlp.getTempPath(), toolName, availableVersion);
-            // If a previous download exists, clean it up before downloading again
-            if (fs_1.default.existsSync(baseDownloadPath)) {
-                core.debug(`Cleaning ${baseDownloadPath}`);
-                yield io.rmRF(baseDownloadPath);
-            }
-            core.debug(`Creating ${baseDownloadPath}`);
-            yield io.mkdirP(baseDownloadPath);
-            const symbolClientZip = yield downloadSymbolClient(symbolServiceUri, baseDownloadPath);
-            const unzipPath = path_1.default.join(baseDownloadPath, zipName);
-            yield unzipSymbolClient(symbolClientZip, unzipPath);
-            // Cache the tool for future use
-            toolPath = yield tc.cacheDir(unzipPath, toolName, availableVersion);
-            core.debug(`Cached tool ${toolName}, version: ${availableVersion} at '${toolPath}'`);
-        }
-        else {
-            core.debug(`Cached tool ${toolName}, version: ${availableVersion} found at '${toolPath}`);
-        }
-        // add on the lib\net45 path to the actual executable
-        toolPath = path_1.default.join(toolPath, 'lib', 'net45');
-        return toolPath;
-    });
-}
-exports.updateSymbolClient = updateSymbolClient;
-function publishSymbols(symbolServiceUri, requestName, sourcePath, sourcePathListFileName, expirationInDays, personalAccessToken) {
-    return __awaiter(this, void 0, void 0, function* () {
-        core.debug(`Using endpoint ${symbolServiceUri} to create request ${requestName} with content in ${sourcePath}`);
-        // the latest symbol.app.buildtask.zip and use the assemblies in it.
-        const assemblyPath = yield updateSymbolClient(symbolServiceUri);
-        // Publish the files
-        try {
-            // if the last char in the source path is \, remove it
-            if (sourcePath.endsWith('\\')) {
-                sourcePath = sourcePath.substr(0, sourcePath.length - 1);
-                core.debug(`Removed trailing '\\' in sourcePath. New value: ${sourcePath}`);
-            }
-            let args = `publish --service "${symbolServiceUri}" --name "${requestName}" --directory "${sourcePath}"`;
-            if (expirationInDays) {
-                args += ` --expirationInDays "${expirationInDays}"`;
-            }
-            core.exportVariable('SYMBOL_PAT_AUTH_TOKEN', personalAccessToken);
-            args += ` --patAuthEnvVar SYMBOL_PAT_AUTH_TOKEN`;
-            if (sourcePathListFileName) {
-                if (!fs_1.default.existsSync(sourcePathListFileName)) {
-                    throw Error(`File ${sourcePathListFileName} not found}`);
-                }
-                args += ` --fileListFileName "${sourcePathListFileName}"`;
-            }
-            yield runSymbolCommand(assemblyPath, args);
-        }
-        catch (err) {
-            core.error(`Error ${err}`);
-            throw err;
-        }
-    });
-}
-exports.publishSymbols = publishSymbols;
-function unpublishSymbols(Share, TransactionId) {
-    const symstoreArgs = `del /i "${TransactionId} /s "${Share}"`;
-    core.debug(symstoreArgs);
-    core.info(`Executing symstore.exe ${symstoreArgs}`);
-}
-exports.unpublishSymbols = unpublishSymbols;
-function getSymbolServiceUri(collectionUri, personalAccessToken) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const serviceDefinitionUri = `${collectionUri}/_apis/servicedefinitions/locationservice2/951917ac-a960-4999-8464-e3f0aa25b381`;
-        let artifactsUri = '';
-        const auth = { auth: { username: '', password: personalAccessToken } };
-        let response = yield axios_1.default.get(serviceDefinitionUri, auth);
-        if (response.status === 200) {
-            const locationUri = response.data.locationMappings[0].location;
-            if (!locationUri) {
-                throw Error(`No location mappings found while querying ${serviceDefinitionUri}`);
-            }
-            const locationServiceUri = `${locationUri}/_apis/servicedefinitions/locationservice2/00000016-0000-8888-8000-000000000000`;
-            response = yield axios_1.default.get(locationServiceUri, auth);
-            if (response.status !== 200) {
-                throw Error(`Failure while querying '${locationServiceUri}', returned (${response.status} - ${response.statusText})`);
-            }
-            artifactsUri = response.data.locationMappings[0].location;
-            if (!artifactsUri) {
-                core.error(`No location mappings found while querying ${artifactsUri}`);
-            }
-            core.info(`Retrieved artifact service url: '${artifactsUri}'`);
-        }
-        else {
-            core.error(`Symbol server not found at ${collectionUri}`);
-        }
-        return artifactsUri;
-    });
-}
-exports.getSymbolServiceUri = getSymbolServiceUri;
-/**
- * Finds the path to a tool version in the local installed tool cache
- *
- * @param toolName      name of the tool
- * @param versionSpec   version of the tool
- * @param arch          optional arch.  defaults to arch of computer
- */
-function find(toolName, versionSpec, arch) {
-    if (!toolName) {
-        throw new Error('toolName parameter is required');
-    }
-    if (!versionSpec) {
-        throw new Error('versionSpec parameter is required');
-    }
-    arch = arch || os.arch();
-    // attempt to resolve an explicit version
-    if (!_isExplicitVersion(versionSpec)) {
-        const localVersions = findAllVersions(toolName, arch);
-        const match = _evaluateVersions(localVersions, versionSpec);
-        versionSpec = match;
-    }
-    // check for the explicit version in the cache
-    let toolPath = '';
-    if (versionSpec) {
-        const cachePath = path_1.default.join(_getCacheDirectory(), toolName, versionSpec, arch);
-        core.debug(`checking cache: ${cachePath}`);
-        if (fs_1.default.existsSync(cachePath) && fs_1.default.existsSync(`${cachePath}.complete`)) {
-            core.debug(`Found tool in cache ${toolName} ${versionSpec} ${arch}`);
-            toolPath = cachePath;
-        }
-        else {
-            core.debug('not found');
-        }
-    }
-    return toolPath;
-}
-exports.find = find;
-/**
- * Finds the paths to all versions of a tool that are installed in the local tool cache
- *
- * @param toolName  name of the tool
- * @param arch      optional arch.  defaults to arch of computer
- */
-function findAllVersions(toolName, arch) {
-    const versions = [];
-    arch = arch || os.arch();
-    const toolPath = path_1.default.join(_getCacheDirectory(), toolName);
-    if (fs_1.default.existsSync(toolPath)) {
-        const children = fs_1.default.readdirSync(toolPath);
-        for (const child of children) {
-            if (_isExplicitVersion(child)) {
-                const fullPath = path_1.default.join(toolPath, child, arch || '');
-                if (fs_1.default.existsSync(fullPath) && fs_1.default.existsSync(`${fullPath}.complete`)) {
-                    versions.push(child);
-                }
-            }
-        }
-    }
-    return versions;
-}
-exports.findAllVersions = findAllVersions;
-/**
- * Finds the paths to all versions of a tool that are installed in the local tool cache
- *
- * @param versions      a list of versions to evaluate
- * @param versionSpec   version of the tool
- */
-function _evaluateVersions(versions, versionSpec) {
-    let version = '';
-    core.debug(`evaluating ${versions.length} versions`);
-    versions = versions.sort((a, b) => {
-        if (semver.gt(a, b)) {
-            return 1;
-        }
-        return -1;
-    });
-    for (let i = versions.length - 1; i >= 0; i--) {
-        const potential = versions[i];
-        const satisfied = semver.satisfies(potential, versionSpec);
-        if (satisfied) {
-            version = potential;
-            break;
-        }
-    }
-    if (version) {
-        core.debug(`matched: ${version}`);
-    }
-    else {
-        core.debug('match not found');
-    }
-    return version;
-}
-/**
- * Gets RUNNER_TOOL_CACHE
- */
-function _getCacheDirectory() {
-    const cacheDirectory = process.env['RUNNER_TOOL_CACHE'] || '';
-    assert_1.ok(cacheDirectory, 'Expected RUNNER_TOOL_CACHE to be defined');
-    return cacheDirectory;
-}
-function _isExplicitVersion(versionSpec) {
-    const c = semver.clean(versionSpec, { loose: true }) || '';
-    core.debug(`isExplicit: ${c}`);
-    const valid = semver.valid(c) != null;
-    core.debug(`explicit? ${valid}`);
-    return valid;
-}
-
-
-/***/ }),
-
 /***/ 696:
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse("{\"name\":\"axios\",\"version\":\"0.21.4\",\"description\":\"Promise based HTTP client for the browser and node.js\",\"main\":\"index.js\",\"scripts\":{\"test\":\"grunt test\",\"start\":\"node ./sandbox/server.js\",\"build\":\"NODE_ENV=production grunt build\",\"preversion\":\"npm test\",\"version\":\"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json\",\"postversion\":\"git push && git push --tags\",\"examples\":\"node ./examples/server.js\",\"coveralls\":\"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js\",\"fix\":\"eslint --fix lib/**/*.js\"},\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/axios/axios.git\"},\"keywords\":[\"xhr\",\"http\",\"ajax\",\"promise\",\"node\"],\"author\":\"Matt Zabriskie\",\"license\":\"MIT\",\"bugs\":{\"url\":\"https://github.com/axios/axios/issues\"},\"homepage\":\"https://axios-http.com\",\"devDependencies\":{\"coveralls\":\"^3.0.0\",\"es6-promise\":\"^4.2.4\",\"grunt\":\"^1.3.0\",\"grunt-banner\":\"^0.6.0\",\"grunt-cli\":\"^1.2.0\",\"grunt-contrib-clean\":\"^1.1.0\",\"grunt-contrib-watch\":\"^1.0.0\",\"grunt-eslint\":\"^23.0.0\",\"grunt-karma\":\"^4.0.0\",\"grunt-mocha-test\":\"^0.13.3\",\"grunt-ts\":\"^6.0.0-beta.19\",\"grunt-webpack\":\"^4.0.2\",\"istanbul-instrumenter-loader\":\"^1.0.0\",\"jasmine-core\":\"^2.4.1\",\"karma\":\"^6.3.2\",\"karma-chrome-launcher\":\"^3.1.0\",\"karma-firefox-launcher\":\"^2.1.0\",\"karma-jasmine\":\"^1.1.1\",\"karma-jasmine-ajax\":\"^0.1.13\",\"karma-safari-launcher\":\"^1.0.0\",\"karma-sauce-launcher\":\"^4.3.6\",\"karma-sinon\":\"^1.0.5\",\"karma-sourcemap-loader\":\"^0.3.8\",\"karma-webpack\":\"^4.0.2\",\"load-grunt-tasks\":\"^3.5.2\",\"minimist\":\"^1.2.0\",\"mocha\":\"^8.2.1\",\"sinon\":\"^4.5.0\",\"terser-webpack-plugin\":\"^4.2.3\",\"typescript\":\"^4.0.5\",\"url-search-params\":\"^0.10.0\",\"webpack\":\"^4.44.2\",\"webpack-dev-server\":\"^3.11.0\"},\"browser\":{\"./lib/adapters/http.js\":\"./lib/adapters/xhr.js\"},\"jsdelivr\":\"dist/axios.min.js\",\"unpkg\":\"dist/axios.min.js\",\"typings\":\"./index.d.ts\",\"dependencies\":{\"follow-redirects\":\"^1.14.0\"},\"bundlesize\":[{\"path\":\"./dist/axios.min.js\",\"threshold\":\"5kB\"}]}");
+module.exports = JSON.parse("{\"_from\":\"axios@^0.21.4\",\"_id\":\"axios@0.21.4\",\"_inBundle\":false,\"_integrity\":\"sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==\",\"_location\":\"/axios\",\"_phantomChildren\":{},\"_requested\":{\"type\":\"range\",\"registry\":true,\"raw\":\"axios@^0.21.4\",\"name\":\"axios\",\"escapedName\":\"axios\",\"rawSpec\":\"^0.21.4\",\"saveSpec\":null,\"fetchSpec\":\"^0.21.4\"},\"_requiredBy\":[\"/\"],\"_resolved\":\"https://registry.npmjs.org/axios/-/axios-0.21.4.tgz\",\"_shasum\":\"c67b90dc0568e5c1cf2b0b858c43ba28e2eda575\",\"_spec\":\"axios@^0.21.4\",\"_where\":\"C:\\\\Users\\\\taghos\\\\source\\\\github\\\\action-publish-symbols\",\"author\":{\"name\":\"Matt Zabriskie\"},\"browser\":{\"./lib/adapters/http.js\":\"./lib/adapters/xhr.js\"},\"bugs\":{\"url\":\"https://github.com/axios/axios/issues\"},\"bundleDependencies\":false,\"bundlesize\":[{\"path\":\"./dist/axios.min.js\",\"threshold\":\"5kB\"}],\"dependencies\":{\"follow-redirects\":\"^1.14.0\"},\"deprecated\":false,\"description\":\"Promise based HTTP client for the browser and node.js\",\"devDependencies\":{\"coveralls\":\"^3.0.0\",\"es6-promise\":\"^4.2.4\",\"grunt\":\"^1.3.0\",\"grunt-banner\":\"^0.6.0\",\"grunt-cli\":\"^1.2.0\",\"grunt-contrib-clean\":\"^1.1.0\",\"grunt-contrib-watch\":\"^1.0.0\",\"grunt-eslint\":\"^23.0.0\",\"grunt-karma\":\"^4.0.0\",\"grunt-mocha-test\":\"^0.13.3\",\"grunt-ts\":\"^6.0.0-beta.19\",\"grunt-webpack\":\"^4.0.2\",\"istanbul-instrumenter-loader\":\"^1.0.0\",\"jasmine-core\":\"^2.4.1\",\"karma\":\"^6.3.2\",\"karma-chrome-launcher\":\"^3.1.0\",\"karma-firefox-launcher\":\"^2.1.0\",\"karma-jasmine\":\"^1.1.1\",\"karma-jasmine-ajax\":\"^0.1.13\",\"karma-safari-launcher\":\"^1.0.0\",\"karma-sauce-launcher\":\"^4.3.6\",\"karma-sinon\":\"^1.0.5\",\"karma-sourcemap-loader\":\"^0.3.8\",\"karma-webpack\":\"^4.0.2\",\"load-grunt-tasks\":\"^3.5.2\",\"minimist\":\"^1.2.0\",\"mocha\":\"^8.2.1\",\"sinon\":\"^4.5.0\",\"terser-webpack-plugin\":\"^4.2.3\",\"typescript\":\"^4.0.5\",\"url-search-params\":\"^0.10.0\",\"webpack\":\"^4.44.2\",\"webpack-dev-server\":\"^3.11.0\"},\"homepage\":\"https://axios-http.com\",\"jsdelivr\":\"dist/axios.min.js\",\"keywords\":[\"xhr\",\"http\",\"ajax\",\"promise\",\"node\"],\"license\":\"MIT\",\"main\":\"index.js\",\"name\":\"axios\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/axios/axios.git\"},\"scripts\":{\"build\":\"NODE_ENV=production grunt build\",\"coveralls\":\"cat coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js\",\"examples\":\"node ./examples/server.js\",\"fix\":\"eslint --fix lib/**/*.js\",\"postversion\":\"git push && git push --tags\",\"preversion\":\"npm test\",\"start\":\"node ./sandbox/server.js\",\"test\":\"grunt test\",\"version\":\"npm run build && grunt version && git add -A dist && git add CHANGELOG.md bower.json package.json\"},\"typings\":\"./index.d.ts\",\"unpkg\":\"dist/axios.min.js\",\"version\":\"0.21.4\"}");
 
 /***/ }),
 

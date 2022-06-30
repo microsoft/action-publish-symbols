@@ -2,8 +2,8 @@ import * as core from '@actions/core'
 import fs from 'fs'
 import * as glob from '@actions/glob'
 import {Guid} from 'guid-typescript'
-import * as hlp from '../src/helpers'
-import * as ps from '../src/publishSymbols'
+import * as hlp from './helpers'
+import * as ps from './publishSymbols'
 import * as path from 'path'
 import * as io from '@actions/io'
 
@@ -59,7 +59,7 @@ export async function run(): Promise<void> {
 
     stream.end()
 
-    await ps.publishSymbols(symbolServerUrl, requestName, symbolsFolder, tmpFileName, '36530', personalAccessToken)
+    await ps.publishSymbols(accountName, symbolServerUrl, requestName, symbolsFolder, tmpFileName, '36530', personalAccessToken)
 
     if (fs.existsSync(tmpFileName)) {
       io.rmRF(tmpFileName)
