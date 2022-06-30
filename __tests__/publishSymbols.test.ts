@@ -50,7 +50,7 @@ test('downloadAndCache', async () => {
 // test('updateSymbolClient', async () => {
 //   const {symbolServiceUri, patToken} = getSymbolServerUrl()
 //   let toolPath = await ps.updateSymbolClient("1es-cat", symbolServiceUri, patToken)
-//   expect(toolPath).toHaveLength
+//   expect(toolPath).not.toBeNull();
 //   // const allVersions = ps.findAllVersions('SymbolClient')
 //   // for (let version in allVersions) {
 //   //   console.debug(`Version: ${version}`)
