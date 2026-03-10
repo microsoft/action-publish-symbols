@@ -117,7 +117,7 @@ export async function updateSymbolClient(accountName: string, symbolServiceUri: 
 
   // Look up the tool path to see if it's been cached already
   // Note: SymbolClient does not use strict semver, so we have to use our own copy of the find() function
-  let toolPath = find(toolName, versionNumber, 'x64')
+  let toolPath = find(toolName, versionNumber)
 
   // If not tool was found in the cache for the latest version, download and cache it
   if (toolPath === '') {
