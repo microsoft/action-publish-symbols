@@ -14,7 +14,7 @@ jobs:
       runs-on: windows-latest
       steps:
       - name: Checkout from PR branch  
-        uses: actions/checkout@v2
+        uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
 
       - name: installing node_modules
         run: npm install 
